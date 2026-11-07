@@ -1,0 +1,1120 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaAI Live</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #08080d;
+    --panel: #11111a;
+    --border: #252536;
+    --text: #ffffff;
+    --muted: #9292a8;
+    --purple: #a970ff;
+    --pink: #e879f9;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+button, input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* HEADER */
+
+header {
+    height: 72px;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.brand img {
+    height: 37px;
+    width: 37px;
+    border-radius: 11px;
+    object-fit: cover;
+}
+
+.brand span {
+    color: var(--purple);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.status-dot {
+    display: inline-block;
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    background: #777;
+    margin-right: 6px;
+}
+
+.status-dot.connected {
+    background: #35e89b;
+    box-shadow: 0 0 10px #35e89b;
+}
+
+.icon-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 12px;
+    padding: 10px 13px;
+}
+
+/* MAIN */
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.heading {
+    text-align: center;
+    margin-top: 14px;
+}
+
+.heading h1 {
+    font-size: clamp(25px, 4vw, 36px);
+    font-weight: 600;
+}
+
+.heading p {
+    color: var(--muted);
+    margin-top: 9px;
+    font-size: 14px;
+}
+
+/* ORB */
+
+.orb-area {
+    width: 290px;
+    height: 290px;
+    margin: 18px auto 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.orb-ring {
+    position: absolute;
+    width: 245px;
+    height: 245px;
+    border: 1px solid rgba(169,112,255,.25);
+    border-radius: 50%;
+    animation: rotate 12s linear infinite;
+}
+
+.orb-ring.second {
+    width: 205px;
+    height: 205px;
+    border-color: rgba(232,121,249,.4);
+    animation-duration: 8s;
+    animation-direction: reverse;
+}
+
+.orb {
+    height: 145px;
+    width: 145px;
+    border-radius: 50%;
+    position: relative;
+    background:
+        radial-gradient(circle at 30% 25%, #f4c7ff, transparent 27%),
+        radial-gradient(circle at 65% 70%, #6b38ed, transparent 48%),
+        radial-gradient(circle at 40% 45%, #c17aff, #5321ad 65%, #170d35);
+    box-shadow:
+        0 0 35px #984bff,
+        0 0 85px rgba(147,70,255,.5),
+        inset -12px -15px 35px #321071;
+    animation: breathe 3s ease-in-out infinite;
+}
+
+.orb.active {
+    animation: activeOrb 1.2s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes breathe {
+    50% {
+        transform: scale(1.07);
+        box-shadow: 0 0 65px #984bff, 0 0 110px rgba(147,70,255,.6);
+    }
+}
+
+@keyframes activeOrb {
+    50% {
+        transform: scale(1.17);
+        filter: brightness(1.35);
+    }
+}
+
+/* TRANSCRIPT */
+
+.transcript {
+    width: 100%;
+    max-width: 650px;
+    height: 150px;
+    overflow-y: auto;
+    margin-top: 2px;
+    padding: 12px;
+    text-align: center;
+}
+
+.transcript .placeholder {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.message {
+    margin: 10px 0;
+    line-height: 1.5;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.message.user {
+    color: #c9a7ff;
+}
+
+.message.ai {
+    color: #ffffff;
+}
+
+/* CONTROLS */
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 13px;
+    margin: 15px 0;
+}
+
+.control {
+    height: 54px;
+    width: 54px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: white;
+    font-size: 21px;
+}
+
+.control.active {
+    background: #33204d;
+    border-color: var(--purple);
+    box-shadow: 0 0 15px rgba(169,112,255,.25);
+}
+
+.connect {
+    background: linear-gradient(135deg, #a970ff, #7139db);
+    border: none;
+    color: white;
+    border-radius: 30px;
+    padding: 16px 30px;
+    font-weight: 700;
+    min-width: 145px;
+}
+
+.end {
+    background: #ed4265;
+}
+
+.control:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* TEXT INPUT */
+
+.chat-input {
+    width: 100%;
+    max-width: 650px;
+    display: flex;
+    gap: 10px;
+    margin: 8px 0 15px;
+}
+
+.chat-input input {
+    flex: 1;
+    min-width: 0;
+    background: var(--panel);
+    color: white;
+    border: 1px solid var(--border);
+    border-radius: 25px;
+    padding: 15px 19px;
+    outline: none;
+}
+
+.chat-input input:focus {
+    border-color: var(--purple);
+}
+
+.send {
+    width: 52px;
+    border-radius: 50%;
+    border: none;
+    background: var(--purple);
+    color: white;
+    font-size: 20px;
+}
+
+/* OPTIONS */
+
+.options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0 18px;
+    flex-wrap: wrap;
+}
+
+.options label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.options select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 9px;
+    padding: 9px 12px;
+}
+
+.camera-preview {
+    display: none;
+    width: min(320px, 90vw);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 5px 0 15px;
+    background: #000;
+}
+
+.camera-preview video {
+    width: 100%;
+    display: block;
+}
+
+footer {
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    padding: 12px;
+}
+
+@media(max-height: 760px) {
+    .orb-area {
+        height: 220px;
+        width: 220px;
+    }
+
+    .orb {
+        height: 115px;
+        width: 115px;
+    }
+
+    .orb-ring {
+        height: 190px;
+        width: 190px;
+    }
+
+    .orb-ring.second {
+        height: 160px;
+        width: 160px;
+    }
+
+    .transcript {
+        height: 110px;
+    }
+}
+
+@media(max-width: 500px) {
+    header {
+        padding: 0 15px;
+    }
+
+    main {
+        padding: 12px;
+    }
+
+    .heading {
+        margin-top: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+    <div class="brand">
+        <img src="applogo.jpg" alt="NovaAI">
+        Nova<span>AI</span> Live
+    </div>
+
+    <div class="header-right">
+        <div class="status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Disconnected</span>
+        </div>
+
+        <button class="icon-btn" onclick="goHome()">⌂</button>
+    </div>
+</header>
+
+<main>
+
+    <div class="heading">
+        <h1>Talk with NovaAI</h1>
+        <p id="subtitle">Your real-time AI voice companion</p>
+    </div>
+
+    <div class="orb-area">
+        <div class="orb-ring"></div>
+        <div class="orb-ring second"></div>
+        <div class="orb" id="orb"></div>
+    </div>
+
+    <div class="transcript" id="transcript">
+        <div class="placeholder">
+            Connect to start your conversation with NovaAI.
+        </div>
+    </div>
+
+    <div class="camera-preview" id="cameraPreview">
+        <video id="cameraVideo" autoplay muted playsinline></video>
+    </div>
+
+    <div class="controls">
+
+        <button class="control" id="micBtn"
+            onclick="toggleMic()" title="Microphone" disabled>
+            🎙
+        </button>
+
+        <button class="connect" id="connectBtn"
+            onclick="connectLive()">
+            Connect
+        </button>
+
+        <button class="control" id="speakerBtn"
+            onclick="toggleSpeaker()" title="Speaker" disabled>
+            🔊
+        </button>
+
+        <button class="control" id="cameraBtn"
+            onclick="toggleCamera()" title="Camera" disabled>
+            📷
+        </button>
+
+    </div>
+
+    <div class="chat-input">
+        <input id="textInput"
+            type="text"
+            placeholder="Message NovaAI..."
+            onkeydown="if(event.key==='Enter') sendText()"
+            disabled>
+
+        <button class="send" id="sendBtn"
+            onclick="sendText()" disabled>➤</button>
+    </div>
+
+    <div class="options">
+
+        <label for="voiceSelect">Voice</label>
+
+        <select id="voiceSelect">
+            <option value="Charon">Charon</option>
+            <option value="Fenrir">Fenrir</option>
+            <option value="Puck">Puck</option>
+        </select>
+
+        <button class="icon-btn" onclick="clearTranscript()">
+            Clear chat
+        </button>
+
+    </div>
+
+</main>
+
+<footer>
+    NovaAI Live · Powered by Gemini Live
+</footer>
+
+</div>
+
+<script type="module">
+
+import { GoogleGenAI, Modality } from
+"https://esm.sh/@google/genai";
+
+const SUPABASE_URL =
+"https://lcitadmsgfwxemvcyaex.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_0J0LMASleqkhThJP4dT8Kg_NaL3RL06";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const MODEL = "gemini-3.8-live";
+
+let session = null;
+let audioContext = null;
+let outputContext = null;
+let micStream = null;
+let micSource = null;
+let processor = null;
+let cameraStream = null;
+let cameraTimer = null;
+
+let connected = false;
+let micEnabled = true;
+let speakerEnabled = true;
+
+let nextPlayTime = 0;
+let assistantText = "";
+let currentAssistantElement = null;
+
+const $ = id => document.getElementById(id);
+
+function setStatus(text, active = false) {
+    $("statusText").textContent = text;
+    $("statusDot").classList.toggle("connected", active);
+    $("orb").classList.toggle("active", active);
+}
+
+function addMessage(text, type) {
+    const transcript = $("transcript");
+
+    const placeholder = transcript.querySelector(".placeholder");
+    if (placeholder) placeholder.remove();
+
+    const element = document.createElement("div");
+    element.className = "message " + type;
+    element.textContent = text;
+
+    transcript.appendChild(element);
+    transcript.scrollTop = transcript.scrollHeight;
+
+    return element;
+}
+
+function updateAssistantText(text) {
+    if (!currentAssistantElement) {
+        currentAssistantElement = addMessage("", "ai");
+    }
+
+    assistantText += text;
+    currentAssistantElement.textContent = assistantText;
+
+    $("transcript").scrollTop = $("transcript").scrollHeight;
+}
+
+function clearTranscript() {
+    $("transcript").innerHTML =
+        '<div class="placeholder">Your conversation will appear here.</div>';
+
+    assistantText = "";
+    currentAssistantElement = null;
+}
+
+function updateControls() {
+    $("micBtn").disabled = !connected;
+    $("speakerBtn").disabled = !connected;
+    $("cameraBtn").disabled = !connected;
+    $("textInput").disabled = !connected;
+    $("sendBtn").disabled = !connected;
+
+    $("micBtn").classList.toggle("active", micEnabled);
+    $("speakerBtn").classList.toggle("active", speakerEnabled);
+
+    $("connectBtn").textContent = connected ? "Disconnect" : "Connect";
+    $("connectBtn").classList.toggle("end", connected);
+}
+
+async function getToken() {
+    const { data, error } = await supabaseClient.functions.invoke(
+        "gemini-live-token"
+    );
+
+    if (error) {
+        throw new Error(error.message || "Could not get Live token.");
+    }
+
+    if (!data || !data.success || !data.token) {
+        throw new Error(data?.error || "Invalid token response.");
+    }
+
+    return data.token;
+}
+
+async function connectLive() {
+    if (connected) {
+        await disconnectLive();
+        return;
+    }
+
+    try {
+        $("connectBtn").disabled = true;
+        setStatus("Connecting...");
+
+        const { data: sessionData } =
+            await supabaseClient.auth.getSession();
+
+        if (!sessionData.session) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        const token = await getToken();
+
+        const ai = new GoogleGenAI({
+            apiKey: token,
+            httpOptions: {
+                apiVersion: "v1alpha"
+            }
+        });
+
+        const voice = $("voiceSelect").value;
+
+        session = await ai.live.connect({
+            model: MODEL,
+
+            config: {
+                responseModalities: [Modality.AUDIO],
+
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: {
+                            voiceName: voice
+                        }
+                    }
+                },
+
+                inputAudioTranscription: {},
+                outputAudioTranscription: {},
+
+                systemInstruction:
+                    "You are NovaAI, a friendly, intelligent and natural real-time voice assistant. " +
+                    "Speak clearly and conversationally. Respond in the language the user speaks. " +
+                    "Keep spoken answers natural and helpful."
+            },
+
+            callbacks: {
+                onopen: () => {
+                    console.log("Gemini Live connected");
+                },
+
+                onmessage: handleLiveMessage,
+
+                onerror: error => {
+                    console.error("Gemini Live error:", error);
+                    setStatus("Connection error");
+                },
+
+                onclose: event => {
+                    console.log("Gemini Live closed:", event?.reason);
+                    if (connected) {
+                        disconnectLive(false);
+                    }
+                }
+            }
+        });
+
+        connected = true;
+        micEnabled = true;
+
+        await startMicrophone();
+
+        updateControls();
+        setStatus("Connected", true);
+
+        $("subtitle").textContent = "NovaAI is listening. Start speaking!";
+
+    } catch (error) {
+        console.error(error);
+
+        setStatus("Connection failed");
+
+        alert(
+            "Could not connect to NovaAI Live.\n\n" +
+            (error.message || "Please try again.")
+        );
+
+        await disconnectLive(false);
+
+    } finally {
+        $("connectBtn").disabled = false;
+    }
+}
+
+async function startMicrophone() {
+    if (!connected || !micEnabled) return;
+
+    micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+        }
+    });
+
+    audioContext = new AudioContext();
+
+    if (audioContext.state === "suspended") {
+        await audioContext.resume();
+    }
+
+    micSource = audioContext.createMediaStreamSource(micStream);
+
+    processor = audioContext.createScriptProcessor(
+        4096, 1, 1
+    );
+
+    processor.onaudioprocess = event => {
+        if (!connected || !micEnabled || !session) return;
+
+        const input = event.inputBuffer.getChannelData(0);
+
+        const pcm = downsampleTo16k(
+            input,
+            audioContext.sampleRate
+        );
+
+        if (!pcm.length) return;
+
+        session.sendRealtimeInput({
+            audio: {
+                data: arrayBufferToBase64(pcm.buffer),
+                mimeType: "audio/pcm;rate=16000"
+            }
+        });
+    };
+
+    micSource.connect(processor);
+    processor.connect(audioContext.destination);
+}
+
+function downsampleTo16k(buffer, inputRate) {
+    if (inputRate === 16000) {
+        return floatTo16BitPCM(buffer);
+    }
+
+    const ratio = inputRate / 16000;
+    const length = Math.floor(buffer.length / ratio);
+
+    const result = new Float32Array(length);
+
+    for (let i = 0; i < length; i++) {
+        const start = Math.floor(i * ratio);
+        const end = Math.floor((i + 1) * ratio);
+
+        let sum = 0;
+        let count = 0;
+
+        for (let j = start; j < end && j < buffer.length; j++) {
+            sum += buffer[j];
+            count++;
+        }
+
+        result[i] = count ? sum / count : 0;
+    }
+
+    return floatTo16BitPCM(result);
+}
+
+function floatTo16BitPCM(floatData) {
+    const output = new Int16Array(floatData.length);
+
+    for (let i = 0; i < floatData.length; i++) {
+        const sample = Math.max(-1, Math.min(1, floatData[i]));
+
+        output[i] = sample < 0
+            ? sample * 32768
+            : sample * 32767;
+    }
+
+    return output;
+}
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+
+    const chunkSize = 0x8000;
+
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(
+            ...bytes.subarray(i, i + chunkSize)
+        );
+    }
+
+    return btoa(binary);
+}
+
+function base64ToBytes(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+
+    return bytes;
+}
+
+async function handleLiveMessage(message) {
+    const content = message.serverContent;
+
+    if (!content) return;
+
+    if (content.interrupted) {
+        nextPlayTime = outputContext
+            ? outputContext.currentTime
+            : 0;
+
+        assistantText = "";
+        currentAssistantElement = null;
+    }
+
+    if (content.inputTranscription?.text) {
+        addMessage(
+            content.inputTranscription.text,
+            "user"
+        );
+    }
+
+    if (content.outputTranscription?.text) {
+        updateAssistantText(content.outputTranscription.text);
+    }
+
+    const parts = content.modelTurn?.parts || [];
+
+    for (const part of parts) {
+        if (part.text) {
+            updateAssistantText(part.text);
+        }
+
+        if (part.inlineData?.data) {
+            await playAudio(part.inlineData.data);
+        }
+    }
+
+    if (content.turnComplete) {
+        assistantText = "";
+        currentAssistantElement = null;
+    }
+}
+
+async function playAudio(base64) {
+    if (!speakerEnabled) return;
+
+    try {
+        if (!outputContext) {
+            outputContext = new AudioContext({
+                sampleRate: 24000
+            });
+        }
+
+        if (outputContext.state === "suspended") {
+            await outputContext.resume();
+        }
+
+        const bytes = base64ToBytes(base64);
+        const pcm = new Int16Array(
+            bytes.buffer,
+            bytes.byteOffset,
+            Math.floor(bytes.byteLength / 2)
+        );
+
+        const audioBuffer = outputContext.createBuffer(
+            1,
+            pcm.length,
+            24000
+        );
+
+        const channel = audioBuffer.getChannelData(0);
+
+        for (let i = 0; i < pcm.length; i++) {
+            channel[i] = pcm[i] / 32768;
+        }
+
+        const source = outputContext.createBufferSource();
+
+        source.buffer = audioBuffer;
+        source.connect(outputContext.destination);
+
+        const startAt = Math.max(
+            outputContext.currentTime,
+            nextPlayTime
+        );
+
+        source.start(startAt);
+
+        nextPlayTime = startAt + audioBuffer.duration;
+
+    } catch (error) {
+        console.error("Audio playback error:", error);
+    }
+}
+
+async function stopMicrophone() {
+    if (processor) {
+        processor.disconnect();
+        processor.onaudioprocess = null;
+        processor = null;
+    }
+
+    if (micSource) {
+        micSource.disconnect();
+        micSource = null;
+    }
+
+    if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+    }
+
+    if (audioContext) {
+        await audioContext.close().catch(() => {});
+        audioContext = null;
+    }
+}
+
+async function toggleMic() {
+    if (!connected) return;
+
+    if (micEnabled) {
+        micEnabled = false;
+        await stopMicrophone();
+    } else {
+        try {
+            micEnabled = true;
+            await startMicrophone();
+        } catch (error) {
+            micEnabled = false;
+            alert("Microphone permission is required.");
+        }
+    }
+
+    updateControls();
+}
+
+async function toggleSpeaker() {
+    speakerEnabled = !speakerEnabled;
+
+    if (!speakerEnabled && outputContext) {
+        await outputContext.suspend();
+    } else if (speakerEnabled && outputContext) {
+        await outputContext.resume();
+    }
+
+    updateControls();
+}
+
+async function toggleCamera() {
+    if (!connected) return;
+
+    if (cameraStream) {
+        stopCamera();
+        return;
+    }
+
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: "environment",
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            }
+        });
+
+        $("cameraVideo").srcObject = cameraStream;
+        $("cameraPreview").style.display = "block";
+        $("cameraBtn").classList.add("active");
+
+        const video = $("cameraVideo");
+
+        await video.play();
+
+        cameraTimer = setInterval(() => {
+            if (!connected || !session || video.readyState < 2) return;
+
+            const canvas = document.createElement("canvas");
+
+            canvas.width = 640;
+            canvas.height = 480;
+
+            const context = canvas.getContext("2d");
+
+            context.drawImage(video, 0, 0, 640, 480);
+
+            const imageData = canvas.toDataURL(
+                "image/jpeg",
+                0.65
+            ).split(",")[1];
+
+            session.sendRealtimeInput({
+                video: {
+                    data: imageData,
+                    mimeType: "image/jpeg"
+                }
+            });
+
+        }, 1200);
+
+    } catch (error) {
+        console.error(error);
+        alert("Camera permission is required.");
+    }
+}
+
+function stopCamera() {
+    if (cameraTimer) {
+        clearInterval(cameraTimer);
+        cameraTimer = null;
+    }
+
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    $("cameraVideo").srcObject = null;
+    $("cameraPreview").style.display = "none";
+    $("cameraBtn").classList.remove("active");
+}
+
+function sendText() {
+    const input = $("textInput");
+    const text = input.value.trim();
+
+    if (!text || !connected || !session) return;
+
+    addMessage(text, "user");
+
+    session.sendRealtimeInput({
+        text: text
+    });
+
+    input.value = "";
+}
+
+async function disconnectLive(closeSession = true) {
+    connected = false;
+
+    await stopMicrophone();
+    stopCamera();
+
+    if (closeSession && session) {
+        try {
+            session.close();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    session = null;
+
+    if (outputContext) {
+        await outputContext.close().catch(() => {});
+        outputContext = null;
+    }
+
+    nextPlayTime = 0;
+    assistantText = "";
+    currentAssistantElement = null;
+
+    updateControls();
+    setStatus("Disconnected");
+
+    $("subtitle").textContent =
+        "Your real-time AI voice companion";
+}
+
+function goHome() {
+    window.location.href = "home.html";
+}
+
+window.connectLive = connectLive;
+window.disconnectLive = disconnectLive;
+window.toggleMic = toggleMic;
+window.toggleSpeaker = toggleSpeaker;
+window.toggleCamera = toggleCamera;
+window.sendText = sendText;
+window.clearTranscript = clearTranscript;
+window.goHome = goHome;
+
+updateControls();
+
+</script>
+
+</body>
+</html>
