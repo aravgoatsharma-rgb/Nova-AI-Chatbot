@@ -1,789 +1,563 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NovaAI</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 
 <style>
 :root {
-    --bg:#09090e;
-    --panel:#111119;
-    --panel2:#191923;
-    --text:#f8f7fc;
-    --muted:#9996a8;
-    --border:#2b2937;
-    --accent:#a855f7;
-    --accent2:#7c3aed;
-    --input:#15151e;
-    --user:#6332a8;
-    --ai:#15151e;
-    --shadow:0 12px 40px #0003;
+    --bg: #ffffff;
+    --sidebar: #f7f7f8;
+    --card: #ffffff;
+    --text: #171717;
+    --muted: #777777;
+    --border: #e5e5e5;
+    --input: #ffffff;
+    --hover: #eeeeef;
+    --accent: #171717;
+    --accent-text: #ffffff;
 }
 
-body.light {
-    --bg:#f6f5fa;
-    --panel:#fff;
-    --panel2:#efedf5;
-    --text:#191522;
-    --muted:#777184;
-    --border:#e5e1ed;
-    --input:#fff;
-    --user:#7c3aed;
-    --ai:#fff;
-    --shadow:0 12px 40px #24143b12;
+body.dark {
+    --bg: #101010;
+    --sidebar: #171717;
+    --card: #1d1d1d;
+    --text: #f5f5f5;
+    --muted: #a0a0a0;
+    --border: #303030;
+    --input: #1c1c1c;
+    --hover: #292929;
+    --accent: #ffffff;
+    --accent-text: #111111;
 }
 
 * {
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:Inter,Arial,sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    height:100dvh;
-    overflow:hidden;
-    background:var(--bg);
-    color:var(--text);
-    transition:background .2s,color .2s;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-button,input,textarea,select {
-    font:inherit;
+button, input, textarea {
+    font: inherit;
 }
 
 button {
-    cursor:pointer;
+    cursor: pointer;
 }
 
 .app {
-    height:100dvh;
-    display:flex;
-    position:relative;
-    overflow:hidden;
+    display: flex;
+    height: 100vh;
+    width: 100%;
 }
 
 /* SIDEBAR */
 
 .sidebar {
-    width:285px;
-    flex:0 0 285px;
-    height:100%;
-    background:var(--panel);
-    border-right:1px solid var(--border);
-    display:flex;
-    flex-direction:column;
-    padding:17px 13px;
-    z-index:30;
-    transition:transform .25s;
+    width: 260px;
+    min-width: 260px;
+    height: 100%;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: 0.25s;
+    z-index: 10;
+}
+
+.sidebar.hidden {
+    margin-left: -260px;
 }
 
 .sidebar-top {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:2px 5px 18px;
+    padding: 20px 16px 12px;
 }
 
 .brand {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:22px;
-    font-weight:800;
-    letter-spacing:-.8px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 25px;
+    padding: 0 5px;
 }
 
-.brand-mark {
-    width:31px;
-    height:31px;
-    border-radius:11px;
-    background:radial-gradient(circle at 35% 30%,#fff,#d9aaff 17%,#a855f7 48%,#4c1d95 100%);
-    box-shadow:0 0 22px #a855f755;
+.brand img {
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
+    object-fit: cover;
 }
 
 .brand span {
-    color:var(--accent);
-}
-
-.icon-btn {
-    width:38px;
-    height:38px;
-    border:1px solid var(--border);
-    border-radius:11px;
-    background:var(--panel2);
-    color:var(--text);
-    font-size:18px;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .new-chat {
-    width:100%;
-    padding:12px;
-    border:0;
-    border-radius:12px;
-    color:white;
-    font-weight:700;
-    background:linear-gradient(110deg,#7c3aed,#b05cf4);
-    margin-bottom:16px;
+    width: 100%;
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    text-align: left;
+    font-size: 14px;
+}
+
+.new-chat:hover,
+.nav-button:hover,
+.history-item:hover {
+    background: var(--hover);
 }
 
 .sidebar-scroll {
-    flex:1;
-    overflow-y:auto;
-    min-height:0;
-    padding-right:4px;
-    scrollbar-width:thin;
-    scrollbar-color:var(--border) transparent;
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 12px;
 }
 
 .sidebar-scroll::-webkit-scrollbar {
-    width:6px;
+    width: 5px;
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-    background:var(--border);
-    border-radius:9px;
+    background: #999;
+    border-radius: 10px;
 }
 
-.side-label {
-    font-size:10px;
-    letter-spacing:1.5px;
-    text-transform:uppercase;
-    color:var(--muted);
-    padding:12px 9px 8px;
+.section-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 10px 9px;
 }
 
-.nav-item {
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:11px 12px;
-    border-radius:10px;
-    color:var(--muted);
-    font-size:13px;
-    margin:2px 0;
-    cursor:pointer;
+.nav-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 3px;
 }
 
-.nav-item:hover,
-.nav-item.active {
-    background:var(--panel2);
-    color:var(--text);
+.nav-button.active {
+    background: var(--hover);
+    font-weight: bold;
 }
 
 .nav-icon {
-    width:21px;
-    text-align:center;
-    font-size:17px;
+    width: 20px;
+    text-align: center;
+    font-size: 17px;
 }
 
-.recent-list {
-    padding-bottom:12px;
-}
-
-.recent-chat {
-    padding:9px 11px;
-    border-radius:9px;
-    font-size:12px;
-    color:var(--muted);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    cursor:pointer;
-}
-
-.recent-chat:hover,
-.recent-chat.active {
-    background:var(--panel2);
-    color:var(--text);
+.history-item {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-bottom {
-    padding-top:10px;
-    flex-shrink:0;
+    padding: 14px;
+    border-top: 1px solid var(--border);
 }
 
 .profile {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 5px 4px;
-    border-top:1px solid var(--border);
-    min-width:0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
 }
 
 .avatar {
-    width:37px;
-    height:37px;
-    flex:0 0 37px;
-    border-radius:50%;
-    display:grid;
-    place-items:center;
-    background:linear-gradient(135deg,#9333ea,#c084fc);
-    color:#fff;
-    font-weight:800;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-text);
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
-.profile-meta {
-    min-width:0;
-    flex:1;
+.profile-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .profile-name {
-    font-size:12px;
-    font-weight:700;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
+    font-size: 13px;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .profile-email {
-    font-size:10px;
-    color:var(--muted);
-    margin-top:4px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.overlay {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:#0008;
-    z-index:25;
+.signout {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 18px;
+    padding: 5px;
 }
 
 /* MAIN */
 
 .main {
-    flex:1;
-    min-width:0;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    position:relative;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
 }
 
-.header {
-    height:62px;
-    flex:0 0 62px;
-    padding:0 19px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border-bottom:1px solid var(--border);
+.topbar {
+    height: 65px;
+    min-height: 65px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 15px;
 }
 
-.header-left,
-.header-right {
-    display:flex;
-    align-items:center;
-    gap:12px;
-    min-width:0;
+.icon-button {
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 21px;
+    padding: 7px;
+    border-radius: 8px;
 }
 
-.header-title {
-    font-size:15px;
-    font-weight:750;
+.icon-button:hover {
+    background: var(--hover);
 }
 
-.model-label {
-    font-size:11px;
-    color:var(--muted);
-    background:var(--panel2);
-    padding:7px 10px;
-    border-radius:20px;
+.top-title {
+    font-size: 15px;
+    font-weight: bold;
+    flex: 1;
 }
 
-/* CHAT */
+.provider-label {
+    color: var(--muted);
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 12px;
+}
+
+.content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
 
 .chat-area {
-    flex:1;
-    overflow-y:auto;
-    padding:26px 17px 18px;
-    scroll-behavior:smooth;
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 35px 24px 25px;
+    flex: 1;
 }
 
 .welcome {
-    margin:auto;
-    text-align:center;
-    max-width:580px;
-    padding:25px 10px;
+    text-align: center;
+    margin: 95px auto 40px;
 }
 
-.welcome-orb {
-    width:76px;
-    height:76px;
-    margin:0 auto 22px;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 30%,#f4ddff,#b45cff 35%,#4c1d95 80%);
-    box-shadow:0 0 45px #a855f755;
-    animation:float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    50% {
-        transform:translateY(-8px) scale(1.04);
-    }
+.welcome img {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 18px;
+    margin-bottom: 20px;
 }
 
 .welcome h1 {
-    font-size:clamp(27px,5vw,39px);
-    letter-spacing:-1px;
-    margin-bottom:11px;
-}
-
-.welcome h1 span {
-    color:var(--accent);
+    font-size: 30px;
+    margin-bottom: 12px;
 }
 
 .welcome p {
-    font-size:13px;
-    line-height:1.7;
-    color:var(--muted);
+    color: var(--muted);
+    font-size: 14px;
 }
 
-.suggestions {
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
-    margin-top:27px;
-}
-
-.suggestion {
-    padding:14px;
-    text-align:left;
-    border:1px solid var(--border);
-    border-radius:13px;
-    background:var(--panel);
-    color:var(--text);
-    font-size:12px;
-}
-
-.suggestion:hover {
-    border-color:var(--accent);
-}
-
-.suggestion small {
-    display:block;
-    color:var(--muted);
-    margin-top:6px;
-    font-size:10px;
-}
-
-.message-row {
-    max-width:800px;
-    width:100%;
-    margin:0 auto 20px;
-    display:flex;
-    flex-direction:column;
-    gap:7px;
+.messages {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
 }
 
 .message {
-    max-width:88%;
-    padding:12px 15px;
-    border-radius:16px;
-    font-size:14px;
-    line-height:1.7;
-    white-space:pre-wrap;
-    overflow-wrap:anywhere;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    animation: appear 0.2s ease;
 }
 
-.user-message {
-    align-self:flex-end;
-    background:var(--user);
-    color:white;
-    border-bottom-right-radius:5px;
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.ai-message {
-    align-self:flex-start;
-    background:var(--ai);
-    border:1px solid var(--border);
-    color:var(--text);
-    border-bottom-left-radius:5px;
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: bold;
+    background: var(--hover);
 }
 
-.message-tools {
-    display:flex;
-    gap:8px;
-    font-size:11px;
-    color:var(--muted);
+.message-body {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.75;
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
-.message-tools button {
-    border:0;
-    background:transparent;
-    color:inherit;
+.message-role {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
-
-/* THINKING ANIMATION */
 
 .thinking {
-    display:flex;
-    align-items:center;
-    gap:9px;
-    color:var(--muted);
-    font-size:13px;
-    padding:13px 15px;
-}
-
-.dots {
-    display:flex;
-    gap:4px;
-}
-
-.dots i {
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:var(--accent);
-    animation:blink 1s infinite;
-}
-
-.dots i:nth-child(2) {
-    animation-delay:.15s;
-}
-
-.dots i:nth-child(3) {
-    animation-delay:.3s;
-}
-
-@keyframes blink {
-    0%,80%,100% {
-        opacity:.25;
-        transform:translateY(0);
-    }
-    40% {
-        opacity:1;
-        transform:translateY(-4px);
-    }
-}
-
-/* COMPOSER */
-
-.composer-wrap {
-    padding:10px 16px 16px;
-    background:var(--bg);
-}
-
-.composer {
-    max-width:820px;
-    margin:auto;
-    background:var(--input);
-    border:1px solid var(--border);
-    border-radius:22px;
-    padding:9px 11px;
-    box-shadow:var(--shadow);
-}
-
-.composer textarea {
-    width:100%;
-    min-height:36px;
-    max-height:130px;
-    resize:none;
-    border:0;
-    outline:0;
-    background:transparent;
-    color:var(--text);
-    font-size:14px;
-    padding:8px;
-}
-
-.composer textarea::placeholder {
-    color:var(--muted);
-}
-
-.composer-bottom {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:4px 2px 1px;
-}
-
-.tool-buttons {
-    display:flex;
-    align-items:center;
-    gap:5px;
-}
-
-.tool-btn {
-    width:34px;
-    height:34px;
-    border:0;
-    border-radius:50%;
-    background:transparent;
-    color:var(--muted);
-    font-size:18px;
-}
-
-.tool-btn:hover {
-    background:var(--panel2);
-    color:var(--accent);
-}
-
-.send-btn {
-    width:37px;
-    height:37px;
-    border:0;
-    border-radius:50%;
-    background:var(--accent);
-    color:white;
-    font-size:20px;
-}
-
-.send-btn:disabled {
-    opacity:.5;
-    cursor:wait;
-}
-
-.disclaimer {
-    text-align:center;
-    color:var(--muted);
-    font-size:10px;
-    margin-top:9px;
-}
-
-/* FEATURE SECTIONS */
-
-.feature-view {
-    display:none;
-    flex:1;
-    overflow-y:auto;
-    padding:25px 18px;
-    text-align:center;
-}
-
-.feature-view.active {
-    display:block;
-}
-
-.feature-view h1 {
-    font-size:27px;
-    margin:18px 0 9px;
-}
-
-.feature-view>p {
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.6;
-}
-
-.feature-card {
-    max-width:650px;
-    margin:22px auto;
-    padding:21px;
-    border:1px solid var(--border);
-    border-radius:17px;
-    background:var(--panel);
-    text-align:left;
-}
-
-.feature-card h3 {
-    font-size:15px;
-}
-
-.feature-card p {
-    color:var(--muted);
-    font-size:12px;
-    line-height:1.6;
-    margin-top:7px;
-}
-
-.feature-input {
-    display:block;
-    width:100%;
-    padding:13px;
-    margin-top:12px;
-    border-radius:11px;
-    border:1px solid var(--border);
-    background:var(--input);
-    color:var(--text);
-    outline:none;
-}
-
-.feature-action {
-    margin-top:13px;
-    padding:11px 18px;
-    border:0;
-    border-radius:22px;
-    background:linear-gradient(100deg,#7c3aed,#b05cf4);
-    color:white;
-    font-weight:700;
-}
-
-.feature-result {
-    margin-top:15px;
-    min-height:120px;
-    padding:13px;
-    border:1px dashed var(--border);
-    border-radius:12px;
-    color:var(--muted);
-    font-size:12px;
-    overflow-wrap:anywhere;
-}
-
-.feature-result img {
-    max-width:100%;
-    border-radius:12px;
-}
-
-.settings-row {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    padding:14px 0;
-    border-bottom:1px solid var(--border);
-}
-
-.settings-row:last-child {
-    border-bottom:0;
-}
-
-.settings-row label {
-    font-size:13px;
-    font-weight:650;
-}
-
-.settings-row select {
-    padding:9px;
-    border-radius:9px;
-    border:1px solid var(--border);
-    background:var(--input);
-    color:var(--text);
-}
-
-/* VOICE */
-
-.live-orb {
-    width:150px;
-    height:150px;
-    margin:30px auto;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 30%,#f4ddff,#b45cff 35%,#4c1d95 80%);
-    box-shadow:0 0 55px #a855f755;
-    animation:float 3s infinite;
-}
-
-.live-orb.active {
-    animation:pulse 1s infinite;
+    color: var(--muted);
+    font-size: 13px;
+    animation: pulse 1s infinite alternate;
 }
 
 @keyframes pulse {
-    50% {
-        transform:scale(1.12);
-        box-shadow:0 0 85px #a855f7;
-    }
+    from { opacity: 0.4; }
+    to { opacity: 1; }
 }
 
-/* CHESS */
+/* INPUT */
 
-.chess-board {
-    width:min(min(82vw,440px),100%);
-    aspect-ratio:1;
-    margin:18px auto;
-    display:grid;
-    grid-template-columns:repeat(8,1fr);
-    border:5px solid var(--border);
-    border-radius:7px;
-    overflow:hidden;
+.input-container {
+    width: 100%;
+    max-width: 850px;
+    padding: 12px 24px 20px;
+    margin: 0 auto;
 }
 
-.square {
-    border:0;
-    display:grid;
-    place-items:center;
-    font-size:clamp(22px,5vw,39px);
-    padding:0;
-    color:#171321;
+.input-box {
+    border: 1px solid var(--border);
+    background: var(--input);
+    border-radius: 17px;
+    padding: 13px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
 }
 
-.square.light-square {
-    background:#eee2cc;
+#prompt {
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    min-height: 30px;
+    max-height: 160px;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-.square.dark-square {
-    background:#8b6b50;
+#prompt::placeholder {
+    color: var(--muted);
 }
 
-.square.selected {
-    outline:4px solid #a855f7;
-    outline-offset:-4px;
+.input-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 9px;
 }
 
-.square.hint {
-    box-shadow:inset 0 0 0 5px #b7f36a;
+.input-hint {
+    font-size: 11px;
+    color: var(--muted);
 }
 
-.chess-status {
-    text-align:center;
-    color:var(--muted);
-    font-size:12px;
+.send-button {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-size: 19px;
 }
 
-.hidden {
-    display:none!important;
+.send-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.disclaimer {
+    color: var(--muted);
+    text-align: center;
+    font-size: 10px;
+    margin-top: 10px;
+}
+
+/* SETTINGS AND OTHER PAGES */
+
+.page-panel {
+    width: 100%;
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 35px 25px;
+}
+
+.page-panel h1 {
+    font-size: 25px;
+    margin-bottom: 10px;
+}
+
+.page-description {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 30px;
+}
+
+.setting-card {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    margin-bottom: 15px;
+    background: var(--card);
+}
+
+.setting-card h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.setting-card p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+.setting-select {
+    padding: 11px;
+    width: 100%;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--input);
+    color: var(--text);
+    outline: none;
+}
+
+.action-button {
+    padding: 10px 15px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--card);
+    color: var(--text);
+}
+
+.action-button:hover {
+    background: var(--hover);
 }
 
 /* MOBILE */
 
-@media(max-width:760px) {
+@media(max-width: 700px) {
     .sidebar {
-        position:absolute;
-        left:0;
-        top:0;
-        bottom:0;
-        transform:translateX(-105%);
-        width:285px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        box-shadow: 5px 0 25px rgba(0,0,0,0.1);
     }
 
-    .sidebar.open {
-        transform:translateX(0);
+    .sidebar.hidden {
+        margin-left: -260px;
     }
 
-    .overlay.show {
-        display:block;
-    }
-
-    .header {
-        padding:0 11px;
+    .topbar {
+        padding: 0 12px;
     }
 
     .chat-area {
-        padding:15px 10px;
+        padding: 22px 15px;
     }
 
-    .composer-wrap {
-        padding:8px 9px 12px;
+    .input-container {
+        padding: 10px 12px 15px;
     }
 
-    .model-label {
-        display:none;
+    .welcome {
+        margin-top: 65px;
     }
 
-    .message {
-        max-width:94%;
-    }
-}
-
-@media(min-width:761px) {
-    .sidebar {
-        position:relative;
-        transform:none;
+    .welcome h1 {
+        font-size: 25px;
     }
 
-    .sidebar.collapsed {
-        display:none;
-    }
-
-    .overlay {
-        display:none!important;
+    .provider-label {
+        font-size: 10px;
     }
 }
 </style>
@@ -793,1474 +567,885 @@ button {
 
 <div class="app">
 
-<!-- SIDEBAR -->
+    <!-- SIDEBAR -->
 
-<aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar">
 
-    <div class="sidebar-top">
-        <div class="brand">
-            <div class="brand-mark"></div>
-            <div>Nova<span>AI</span></div>
-        </div>
+        <div class="sidebar-top">
 
-        <button class="icon-btn" onclick="closeSidebar()">×</button>
-    </div>
-
-    <button class="new-chat" onclick="newChat()">＋ New Chat</button>
-
-    <div class="sidebar-scroll">
-
-        <div class="side-label">Workspace</div>
-
-        <div class="nav-item active" data-section="chat"
-             onclick="showSection('chat',this)">
-            <span class="nav-icon">◈</span> Chats
-        </div>
-
-        <div class="nav-item" data-section="codex"
-             onclick="showSection('codex',this)">
-            <span class="nav-icon">⌘</span> Codex
-        </div>
-
-        <div class="nav-item" data-section="chess"
-             onclick="showSection('chess',this)">
-            <span class="nav-icon">♟</span> Chess
-        </div>
-
-        <div class="nav-item" data-section="image"
-             onclick="showSection('image',this)">
-            <span class="nav-icon">▧</span> Image Generation
-        </div>
-
-        <div class="nav-item" data-section="live"
-             onclick="showSection('live',this)">
-            <span class="nav-icon">◉</span> Voice input
-        </div>
-
-        <div class="side-label">Your chats</div>
-
-        <div class="recent-list" id="recentChats">
-            <div class="recent-chat">Your recent chats will appear here</div>
-        </div>
-
-        <div class="side-label">Personal</div>
-
-        <div class="nav-item" data-section="settings"
-             onclick="showSection('settings',this)">
-            <span class="nav-icon">⚙</span> Settings
-        </div>
-
-    </div>
-
-    <div class="sidebar-bottom">
-        <div class="profile">
-            <div class="avatar" id="profileAvatar">N</div>
-
-            <div class="profile-meta">
-                <div class="profile-name" id="profileName">
-                    Loading account…
-                </div>
-
-                <div class="profile-email" id="profileEmail">
-                    Supabase account
-                </div>
+            <div class="brand">
+                <img src="applogo.jpg" alt="NovaAI">
+                <span>NovaAI</span>
             </div>
-        </div>
-    </div>
 
-</aside>
+            <button class="new-chat" onclick="newChat()">
+                ＋ &nbsp; New Chat
+            </button>
 
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-<!-- MAIN -->
-
-<main class="main">
-
-    <header class="header">
-
-        <div class="header-left">
-            <button class="icon-btn" onclick="toggleSidebar()">☰</button>
-            <div class="header-title" id="headerTitle">NovaAI</div>
         </div>
 
-        <div class="header-right">
-            <div class="model-label" id="modelLabel">Groq AI</div>
-            <button class="icon-btn" id="themeButton"
-                    onclick="toggleTheme()">☀</button>
+        <div class="sidebar-scroll">
+
+            <div class="section-label">WORKSPACE</div>
+
+            <button class="nav-button active" data-page="chats"
+                onclick="openPage('chats', this)">
+                <span class="nav-icon">◈</span> Chats
+            </button>
+
+            <button class="nav-button" data-page="codex"
+                onclick="openPage('codex', this)">
+                <span class="nav-icon">⌘</span> Codex
+            </button>
+
+            <button class="nav-button" data-page="chess"
+                onclick="openPage('chess', this)">
+                <span class="nav-icon">♟</span> Chess
+            </button>
+
+            <button class="nav-button" data-page="settings"
+                onclick="openPage('settings', this)">
+                <span class="nav-icon">⚙</span> Settings
+            </button>
+
+            <div class="section-label" style="margin-top:20px">
+                RECENT CHATS
+            </div>
+
+            <div id="historyList"></div>
+
         </div>
 
-    </header>
+        <div class="sidebar-bottom">
 
-    <!-- CHAT -->
+            <div class="profile">
 
-    <section class="chat-area" id="chatSection">
+                <div class="avatar" id="userAvatar">N</div>
 
-        <div class="welcome" id="welcome">
+                <div class="profile-info">
+                    <div class="profile-name" id="userName">Loading...</div>
+                    <div class="profile-email" id="userEmail">Please wait</div>
+                </div>
 
-            <div class="welcome-orb"></div>
-
-            <h1>Hello, welcome to <span>NovaAI</span></h1>
-
-            <p>
-                Your intelligent assistant for ideas, coding,
-                creativity and everything in between.
-            </p>
-
-            <div class="suggestions">
-
-                <button class="suggestion"
-                        onclick="useSuggestion('Help me write some code')">
-                    ⌘ Code something
-                    <small>Build and debug projects</small>
-                </button>
-
-                <button class="suggestion"
-                        onclick="showSection('image')">
-                    ▧ Create an image
-                    <small>Turn ideas into visuals</small>
-                </button>
-
-                <button class="suggestion"
-                        onclick="startVoice()">
-                    🎙 Talk to NovaAI
-                    <small>Speak your prompt</small>
-                </button>
-
-                <button class="suggestion"
-                        onclick="useSuggestion('Explain something new to me')">
-                    ✧ Learn something
-                    <small>Explore new ideas</small>
+                <button class="signout" onclick="signOut()" title="Sign out">
+                    ↪
                 </button>
 
             </div>
 
         </div>
 
-        <div id="messages"></div>
+    </aside>
 
-    </section>
+    <!-- MAIN CONTENT -->
 
-    <!-- CHAT INPUT -->
+    <main class="main">
 
-    <div class="composer-wrap" id="composerWrap">
+        <header class="topbar">
 
-        <div class="composer">
+            <button class="icon-button" onclick="toggleSidebar()"
+                title="Toggle sidebar">
+                ☰
+            </button>
 
-            <textarea id="prompt" rows="1"
-                placeholder="Message NovaAI… (Enter to send, Shift + Enter for a new line)">
-            </textarea>
+            <div class="top-title" id="topTitle">NovaAI</div>
 
-            <div class="composer-bottom">
+            <div class="provider-label" id="providerLabel">
+                Groq AI
+            </div>
 
-                <div class="tool-buttons">
+        </header>
 
-                    <input type="file" id="imageUpload"
-                           accept="image/*" hidden
-                           onchange="handleImageUpload(event)">
+        <div class="content" id="content">
 
-                    <button class="tool-btn" title="Attach image"
-                            onclick="document.getElementById('imageUpload').click()">
-                        ＋
-                    </button>
+            <!-- CHAT PAGE -->
 
-                    <button class="tool-btn" title="Speak prompt"
-                            onclick="startVoice()">🎙</button>
+            <section id="chatPage" class="chat-page">
 
-                    <button class="tool-btn" title="Read last answer"
-                            onclick="readLastAnswer()">🔊</button>
+                <div class="chat-area">
 
-                    <span id="attachmentLabel"
-                          style="font-size:10px;color:var(--muted)">
-                    </span>
+                    <div class="welcome" id="welcome">
+
+                        <img src="applogo.jpg" alt="NovaAI">
+
+                        <h1>What can I help with?</h1>
+
+                        <p>Ask anything. Let's make something amazing.</p>
+
+                    </div>
+
+                    <div class="messages" id="messages"></div>
 
                 </div>
 
-                <button class="send-btn" id="sendButton"
-                        onclick="sendMessage()">↑</button>
+                <div class="input-container">
 
-            </div>
+                    <div class="input-box">
 
-        </div>
+                        <textarea
+                            id="prompt"
+                            rows="1"
+                            placeholder="Message NovaAI..."
+                        ></textarea>
 
-        <div class="disclaimer">
-            NovaAI can make mistakes. Check important information.
-        </div>
+                        <div class="input-bottom">
 
-    </div>
+                            <div class="input-hint">
+                                Enter to send · Shift + Enter for new line
+                            </div>
 
-    <!-- CODEX -->
+                            <button class="send-button" id="sendButton"
+                                onclick="sendMessage()">
+                                ↑
+                            </button>
 
-    <section class="feature-view" id="codexSection">
+                        </div>
 
-        <h1>⌘ NovaAI Codex</h1>
+                    </div>
 
-        <p>
-            A dedicated coding assistant for writing,
-            explaining and debugging code.
-        </p>
+                    <div class="disclaimer">
+                        NovaAI can make mistakes. Check important information.
+                    </div>
 
-        <div class="feature-card">
-
-            <textarea id="codexPrompt" class="feature-input"
-                      rows="4"
-                      placeholder="Describe the code you want to create or debug…">
-            </textarea>
-
-            <button class="feature-action" onclick="sendCodex()">
-                Generate Code
-            </button>
-
-            <div id="codexMessages" style="margin-top:18px"></div>
-
-        </div>
-
-    </section>
-
-    <!-- IMAGE GENERATION -->
-
-    <section class="feature-view" id="imageSection">
-
-        <h1>✧ Image Generation</h1>
-
-        <p>Transform your imagination into images.</p>
-
-        <div class="feature-card">
-
-            <input class="feature-input" id="imagePrompt"
-                   placeholder="Describe the image you want to create…">
-
-            <div class="feature-result" id="imageResult">
-                Your generated image will appear here.
-            </div>
-
-            <button class="feature-action" id="imageButton"
-                    onclick="generateImage()">
-                ✧ Generate Image
-            </button>
-
-        </div>
-
-    </section>
-
-    <!-- VOICE INPUT -->
-
-    <section class="feature-view" id="liveSection">
-
-        <h1>🎙 Voice input</h1>
-
-        <p>
-            Speak your prompt and NovaAI will place it
-            in the chat composer.
-        </p>
-
-        <div class="live-orb" id="liveOrb"></div>
-
-        <p id="liveStatus">
-            Microphone is ready when your browser supports speech recognition.
-        </p>
-
-        <button class="feature-action" onclick="startVoice()">
-            Start speaking
-        </button>
-
-    </section>
-
-    <!-- CHESS -->
-
-    <section class="feature-view" id="chessSection">
-
-        <h1>♟ NovaAI Chess</h1>
-
-        <p>Play a legal chess game locally. White moves first.</p>
-
-        <div class="feature-card" style="text-align:center">
-
-            <div id="chessBoard" class="chess-board"></div>
-
-            <div class="chess-status" id="chessStatus">
-                Select a piece, then select a highlighted destination.
-            </div>
-
-            <button class="feature-action" onclick="resetChess()">
-                New Game
-            </button>
-
-            <button class="feature-action" onclick="flipChess()">
-                Flip Board
-            </button>
-
-        </div>
-
-    </section>
-
-    <!-- SETTINGS -->
-
-    <section class="feature-view" id="settingsSection">
-
-        <h1>⚙ Settings</h1>
-
-        <p>Customize your NovaAI experience and account.</p>
-
-        <div class="feature-card">
-
-            <div class="settings-row">
-
-                <div>
-                    <label>Appearance</label>
-                    <p>Choose light or dark mode.</p>
                 </div>
 
-                <select id="themeSelect" onchange="setTheme(this.value)">
-                    <option value="dark">Dark</option>
-                    <option value="light">Light</option>
-                </select>
+            </section>
 
-            </div>
+            <!-- CODEX PAGE -->
 
-            <div class="settings-row">
+            <section id="codexPage" style="display:none">
 
-                <div>
-                    <label>AI provider</label>
-                    <p>Choose which connected AI provider to use.</p>
-                </div>
-
-                <select id="providerSelect"
-                        onchange="setProvider(this.value)">
-                    <option value="groq">Groq</option>
-                    <option value="gemini">Gemini</option>
-                </select>
-
-            </div>
-
-            <div class="settings-row">
-
-                <div>
-                    <label>Account</label>
-                    <p id="settingsAccount">
-                        Checking signed-in account…
+                <div class="page-panel">
+                    <h1>Codex</h1>
+                    <p class="page-description">
+                        Your coding workspace.
                     </p>
+
+                    <div class="setting-card">
+                        <h3>Code with NovaAI</h3>
+                        <p>
+                            Describe the code you want to create, debug or explain.
+                        </p>
+                        <button class="action-button" onclick="startCodex()">
+                            Start coding →
+                        </button>
+                    </div>
                 </div>
 
-                <div style="display:flex;gap:7px;flex-wrap:wrap">
+            </section>
 
-                    <button class="feature-action" style="margin:0"
-                            onclick="location.href='login.html'">
-                        Sign in
-                    </button>
+            <!-- CHESS PAGE -->
 
-                    <button class="feature-action" style="margin:0"
-                            onclick="signOut()">
-                        Sign out
-                    </button>
+            <section id="chessPage" style="display:none">
+
+                <div class="page-panel">
+                    <h1>Chess</h1>
+                    <p class="page-description">
+                        Your chess workspace.
+                    </p>
+
+                    <div class="setting-card">
+                        <h3>Chess workspace</h3>
+                        <p>
+                            This page is ready for your chess game feature.
+                        </p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- SETTINGS PAGE -->
+
+            <section id="settingsPage" style="display:none">
+
+                <div class="page-panel">
+
+                    <h1>Settings</h1>
+
+                    <p class="page-description">
+                        Manage your NovaAI experience.
+                    </p>
+
+                    <div class="setting-card">
+
+                        <h3>AI Model</h3>
+
+                        <p>
+                            Select which AI provider NovaAI should use.
+                        </p>
+
+                        <select class="setting-select" id="providerSelect"
+                            onchange="changeProvider()">
+                            <option value="groq">Groq AI</option>
+                            <option value="gemini">Google Gemini</option>
+                        </select>
+
+                    </div>
+
+                    <div class="setting-card">
+
+                        <h3>Appearance</h3>
+
+                        <p>
+                            Choose between light and dark mode.
+                        </p>
+
+                        <select class="setting-select" id="themeSelect"
+                            onchange="changeTheme()">
+                            <option value="light">Light mode</option>
+                            <option value="dark">Dark mode</option>
+                        </select>
+
+                    </div>
+
+                    <div class="setting-card">
+
+                        <h3>Account</h3>
+
+                        <p id="settingsEmail">Loading account...</p>
+
+                        <button class="action-button" onclick="signOut()">
+                            Sign out
+                        </button>
+
+                    </div>
 
                 </div>
 
-            </div>
+            </section>
 
         </div>
 
-    </section>
+    </main>
 
-</main>
 </div>
 
 <script>
 
-/* SUPABASE CONFIGURATION */
+// ==========================================
+// SUPABASE CONFIGURATION
+// ==========================================
 
 const SUPABASE_URL =
-"https://lcitadmsgfwxemvcyaex.supabase.co";
+    "https://lcitadmsgfwxemvcyaex.supabase.co";
 
-const SUPABASE_ANON_KEY =
-"sb_publishable_0J0LMASleqkhThJP4dT8Kg_NaL3RL06";
+const SUPABASE_KEY =
+    "sb_publishable_0J0LMASleqkhThJP4dT8Kg_NaL3RL06";
 
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    SUPABASE_KEY
 );
+
+// ==========================================
+// APP STATE
+// ==========================================
 
 let currentUser = null;
 
 let currentProvider =
-    localStorage.getItem("novaai-provider") || "groq";
+    localStorage.getItem("novaai_provider") || "groq";
 
-let activeChatId = null;
-let chatHistory = [];
-let isSending = false;
-let attachedImage = null;
-let lastAnswer = "";
-let speechRecognition = null;
+let currentChatId = null;
 
-const sections = [
-    "chat",
-    "codex",
-    "image",
-    "live",
-    "chess",
-    "settings"
-];
+let chatMessages = [];
 
-/* INITIALIZE */
+let isGenerating = false;
 
-async function initApp() {
+let chatHistory = JSON.parse(
+    localStorage.getItem("novaai_chats") || "[]"
+);
 
-    applyTheme(localStorage.getItem("novaai-theme") || "dark");
+// ==========================================
+// AUTHENTICATION
+// ==========================================
+
+async function initializeApp() {
+
+    const { data, error } =
+        await supabaseClient.auth.getSession();
+
+    if (error || !data.session) {
+        window.location.replace("login.html");
+        return;
+    }
+
+    currentUser = data.session.user;
+
+    const metadata = currentUser.user_metadata || {};
+
+    const displayName =
+        metadata.full_name ||
+        metadata.name ||
+        metadata.user_name ||
+        currentUser.email.split("@")[0];
+
+    document.getElementById("userName").textContent =
+        displayName;
+
+    document.getElementById("userEmail").textContent =
+        currentUser.email || "";
+
+    document.getElementById("userAvatar").textContent =
+        displayName.charAt(0).toUpperCase();
+
+    document.getElementById("settingsEmail").textContent =
+        currentUser.email || "";
 
     document.getElementById("providerSelect").value =
         currentProvider;
 
+    document.getElementById("themeSelect").value =
+        localStorage.getItem("novaai_theme") || "light";
+
+    changeTheme(false);
+
     updateProviderLabel();
 
-    const {data:{session},error} =
-        await supabase.auth.getSession();
+    renderHistory();
 
-    if(error) console.error(error);
+    supabaseClient.auth.onAuthStateChange((event, session) => {
 
-    if(!session) {
-        location.replace("login.html");
-        return;
-    }
-
-    currentUser = session.user;
-
-    updateAccountUI();
-
-    await loadRecentChats();
-
-    supabase.auth.onAuthStateChange((_event,session)=>{
-
-        if(!session) {
-            location.replace("login.html");
-        } else {
-            currentUser = session.user;
-            updateAccountUI();
+        if (event === "SIGNED_OUT" || !session) {
+            window.location.replace("login.html");
         }
 
     });
-
-}
-
-/* ACCOUNT */
-
-function updateAccountUI() {
-
-    const meta = currentUser?.user_metadata || {};
-    const email = currentUser?.email || "";
-
-    const name =
-        meta.full_name ||
-        meta.name ||
-        meta.user_name ||
-        meta.preferred_username ||
-        email.split("@")[0] ||
-        "NovaAI User";
-
-    const initials = name
-        .split(/\s+/)
-        .slice(0,2)
-        .map(x=>x[0])
-        .join("")
-        .toUpperCase() || "N";
-
-    document.getElementById("profileName").textContent = name;
-    document.getElementById("profileEmail").textContent = email;
-    document.getElementById("profileAvatar").textContent = initials;
-
-    document.getElementById("settingsAccount").textContent =
-        name + " · " + email;
-
 }
 
 async function signOut() {
 
-    if(!confirm("Are you sure you want to sign out?")) return;
+    const { error } =
+        await supabaseClient.auth.signOut();
 
-    const {error} = await supabase.auth.signOut();
-
-    if(error) {
-        showNotice(error.message);
+    if (error) {
+        alert("Sign out failed: " + error.message);
         return;
     }
 
-    location.replace("login.html");
-
+    window.location.replace("login.html");
 }
 
-/* SIDEBAR */
+// ==========================================
+// SIDEBAR
+// ==========================================
 
 function toggleSidebar() {
 
-    const side = document.getElementById("sidebar");
-
-    if(innerWidth > 760) {
-        side.classList.toggle("collapsed");
-    } else {
-        side.classList.toggle("open");
-        document.getElementById("overlay").classList.toggle("show");
-    }
+    document.getElementById("sidebar")
+        .classList.toggle("hidden");
 
 }
 
-function closeSidebar() {
+// ==========================================
+// PAGE NAVIGATION
+// ==========================================
 
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("overlay").classList.remove("show");
+function openPage(page, button) {
 
-}
-
-/* NAVIGATION */
-
-function showSection(name,clicked) {
-
-    closeSidebar();
-
-    document.getElementById("chatSection").style.display =
-        name === "chat" ? "flex" : "none";
-
-    document.getElementById("composerWrap").style.display =
-        name === "chat" ? "block" : "none";
-
-    sections
-        .filter(s=>s!=="chat")
-        .forEach(s=>{
-            document.getElementById(s+"Section")
-                .classList.toggle("active",s===name);
-        });
-
-    document.querySelectorAll(".nav-item").forEach(n=>{
-        n.classList.toggle("active",n.dataset.section===name);
-    });
-
-    const titles = {
-        chat:"NovaAI",
-        codex:"Codex",
-        image:"Image Generation",
-        live:"Voice input",
-        chess:"Chess",
-        settings:"Settings"
+    const pageIds = {
+        chats: "chatPage",
+        codex: "codexPage",
+        chess: "chessPage",
+        settings: "settingsPage"
     };
 
-    document.getElementById("headerTitle").textContent =
-        titles[name] || "NovaAI";
+    Object.values(pageIds).forEach(id => {
 
-    if(name==="chess") renderChess();
+        document.getElementById(id).style.display = "none";
 
+    });
+
+    const targetPage = document.getElementById(pageIds[page]);
+
+    if (targetPage) {
+        targetPage.style.display =
+            page === "chats" ? "flex" : "block";
+    }
+
+    document.querySelectorAll(".nav-button").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    if (button) {
+        button.classList.add("active");
+    }
+
+    const titles = {
+        chats: "NovaAI",
+        codex: "Codex",
+        chess: "Chess",
+        settings: "Settings"
+    };
+
+    document.getElementById("topTitle").textContent =
+        titles[page] || "NovaAI";
+
+    if (window.innerWidth <= 700) {
+        document.getElementById("sidebar")
+            .classList.add("hidden");
+    }
 }
 
-/* THEME */
+function startCodex() {
 
-function setTheme(value) {
+    newChat();
 
-    applyTheme(value);
-    localStorage.setItem("novaai-theme",value);
+    document.getElementById("prompt").value =
+        "You are NovaAI Codex, my expert coding assistant. Help me write, debug and explain code. Please help me with: ";
 
-}
-
-function applyTheme(value) {
-
-    document.body.classList.toggle("light",value==="light");
-
-    document.getElementById("themeButton").textContent =
-        value==="light" ? "☾" : "☀";
-
-    const select = document.getElementById("themeSelect");
-
-    if(select) select.value = value;
-
-}
-
-function toggleTheme() {
-
-    setTheme(
-        document.body.classList.contains("light")
-            ? "dark"
-            : "light"
+    openPage(
+        "chats",
+        document.querySelector('[data-page="chats"]')
     );
 
+    document.getElementById("prompt").focus();
 }
 
-/* PROVIDER */
+// ==========================================
+// PROVIDER SETTINGS
+// ==========================================
 
-function setProvider(value) {
+function changeProvider() {
 
-    currentProvider = value;
+    currentProvider =
+        document.getElementById("providerSelect").value;
 
-    localStorage.setItem("novaai-provider",value);
+    localStorage.setItem(
+        "novaai_provider",
+        currentProvider
+    );
 
     updateProviderLabel();
-
 }
 
 function updateProviderLabel() {
 
-    document.getElementById("modelLabel").textContent =
-        currentProvider==="gemini" ? "Gemini AI" : "Groq AI";
-
+    document.getElementById("providerLabel").textContent =
+        currentProvider === "gemini"
+            ? "Gemini AI"
+            : "Groq AI";
 }
 
-/* RECENT CHATS */
+// ==========================================
+// THEME SETTINGS
+// ==========================================
 
-function getStorageKey() {
+function changeTheme(save = true) {
 
-    return "novaai-chats-" + (currentUser?.id || "guest");
+    const theme =
+        document.getElementById("themeSelect").value;
 
-}
+    document.body.classList.toggle(
+        "dark",
+        theme === "dark"
+    );
 
-function readChats() {
-
-    try {
-        return JSON.parse(localStorage.getItem(getStorageKey()) || "[]");
-    } catch {
-        return [];
+    if (save) {
+        localStorage.setItem("novaai_theme", theme);
     }
+}
 
+// ==========================================
+// CHAT MANAGEMENT
+// ==========================================
+
+function newChat() {
+
+    currentChatId = null;
+
+    chatMessages = [];
+
+    document.getElementById("messages").innerHTML = "";
+
+    document.getElementById("welcome").style.display = "block";
+
+    document.getElementById("prompt").value = "";
+
+    openPage(
+        "chats",
+        document.querySelector('[data-page="chats"]')
+    );
+
+    document.getElementById("prompt").focus();
+
+    renderHistory();
 }
 
 function saveCurrentChat() {
 
-    if(!activeChatId || !chatHistory.length) return;
+    if (!chatMessages.length) return;
 
-    const chats = readChats();
+    if (!currentChatId) {
 
-    const title = (
-        chatHistory.find(m=>m.role==="user")?.content ||
-        "New chat"
-    ).replace(/\s+/g," ").slice(0,42);
+        currentChatId = Date.now().toString();
 
-    const entry = {
-        id:activeChatId,
-        title,
-        messages:chatHistory,
-        updated:Date.now()
-    };
+        chatHistory.unshift({
+            id: currentChatId,
+            title:
+                chatMessages.find(m => m.role === "user")
+                    ?.content.slice(0, 45) || "New Chat",
+            messages: [...chatMessages],
+            updated: Date.now()
+        });
 
-    const idx = chats.findIndex(c=>c.id===activeChatId);
-
-    if(idx>=0) {
-        chats[idx] = entry;
     } else {
-        chats.unshift(entry);
-    }
 
-    chats.sort((a,b)=>b.updated-a.updated);
+        const chat =
+            chatHistory.find(c => c.id === currentChatId);
+
+        if (chat) {
+            chat.messages = [...chatMessages];
+            chat.updated = Date.now();
+        }
+    }
 
     localStorage.setItem(
-        getStorageKey(),
-        JSON.stringify(chats.slice(0,60))
+        "novaai_chats",
+        JSON.stringify(chatHistory)
     );
 
-    renderRecentChats();
-
+    renderHistory();
 }
 
-async function loadRecentChats() {
-    renderRecentChats();
-}
+function renderHistory() {
 
-function renderRecentChats() {
+    const container =
+        document.getElementById("historyList");
 
-    const list = document.getElementById("recentChats");
-    const chats = readChats();
+    container.innerHTML = "";
 
-    list.innerHTML = "";
+    chatHistory.forEach(chat => {
 
-    if(!chats.length) {
-        list.innerHTML =
-            '<div class="recent-chat">No chats yet</div>';
-        return;
-    }
+        const item = document.createElement("div");
 
-    chats.forEach(c=>{
+        item.className = "history-item";
 
-        const el = document.createElement("div");
+        item.textContent = chat.title;
 
-        el.className =
-            "recent-chat" +
-            (c.id===activeChatId ? " active" : "");
+        item.title = chat.title;
 
-        el.textContent = c.title || "New chat";
-        el.title = c.title;
+        item.onclick = () => loadChat(chat.id);
 
-        el.onclick = ()=>openChat(c.id);
-
-        list.appendChild(el);
+        container.appendChild(item);
 
     });
-
 }
 
-function openChat(id) {
+function loadChat(id) {
 
-    const chat = readChats().find(c=>c.id===id);
+    const chat = chatHistory.find(c => c.id === id);
 
-    if(!chat) return;
+    if (!chat) return;
 
-    activeChatId = id;
-    chatHistory = chat.messages || [];
+    currentChatId = id;
+
+    chatMessages = [...chat.messages];
 
     document.getElementById("messages").innerHTML = "";
 
-    document.getElementById("welcome").classList.toggle(
-        "hidden",
-        chatHistory.length>0
-    );
+    document.getElementById("welcome").style.display = "none";
 
-    chatHistory.forEach(m=>{
+    chatMessages.forEach(message => {
+
         addMessage(
-            m.content,
-            m.role==="user" ? "user" : "ai",
+            message.role,
+            message.content,
             false
         );
+
     });
 
-    showSection("chat");
-    renderRecentChats();
+    openPage(
+        "chats",
+        document.querySelector('[data-page="chats"]')
+    );
 
+    document.getElementById("content").scrollTop = 0;
 }
 
-function newChat() {
+// ==========================================
+// DISPLAY MESSAGES
+// ==========================================
 
-    activeChatId = null;
-    chatHistory = [];
+function addMessage(role, content, animate = false) {
 
-    document.getElementById("messages").innerHTML = "";
+    document.getElementById("welcome").style.display = "none";
 
-    document.getElementById("welcome").classList.remove("hidden");
+    const messages =
+        document.getElementById("messages");
 
-    document.getElementById("prompt").value = "";
+    const wrapper = document.createElement("div");
 
-    attachedImage = null;
+    wrapper.className = "message";
 
-    document.getElementById("attachmentLabel").textContent = "";
+    const avatar = document.createElement("div");
 
-    showSection("chat");
-    renderRecentChats();
+    avatar.className = "message-avatar";
 
-}
+    avatar.textContent =
+        role === "user" ? "Y" : "N";
 
-/* MESSAGE DISPLAY */
+    const body = document.createElement("div");
 
-function addMessage(text,type,scroll=true) {
+    body.className = "message-body";
 
-    const row = document.createElement("div");
-    row.className = "message-row";
+    const roleLabel = document.createElement("div");
 
-    const bubble = document.createElement("div");
+    roleLabel.className = "message-role";
 
-    bubble.className =
-        "message " +
-        (type==="user" ? "user-message" : "ai-message");
+    roleLabel.textContent =
+        role === "user" ? "You" : "NovaAI";
 
-    bubble.textContent = text;
+    const text = document.createElement("div");
 
-    row.appendChild(bubble);
+    text.className = "message-text";
 
-    if(type==="ai") {
+    body.appendChild(roleLabel);
 
-        const tools = document.createElement("div");
-        tools.className = "message-tools";
+    body.appendChild(text);
 
-        const copy = document.createElement("button");
-        copy.textContent = "Copy";
-        copy.onclick = ()=>navigator.clipboard?.writeText(text);
+    wrapper.appendChild(avatar);
 
-        const speak = document.createElement("button");
-        speak.textContent = "Read aloud";
-        speak.onclick = ()=>speakText(text);
+    wrapper.appendChild(body);
 
-        tools.append(copy,speak);
-        row.appendChild(tools);
+    messages.appendChild(wrapper);
 
+    if (animate) {
+        typeText(text, content);
+    } else {
+        text.textContent = content;
     }
 
-    document.getElementById("messages").appendChild(row);
+    document.getElementById("content").scrollTop =
+        document.getElementById("content").scrollHeight;
 
-    if(scroll) {
-        const area = document.getElementById("chatSection");
-        area.scrollTop = area.scrollHeight;
-    }
-
-    return bubble;
-
+    return text;
 }
 
-/* THINKING */
+// Word-by-word display.
+// The Edge Function returns a complete answer, not a live stream.
+
+function typeText(element, content) {
+
+    const words = content.split(/(\s+)/);
+
+    let index = 0;
+
+    function nextWord() {
+
+        if (index >= words.length) return;
+
+        element.textContent += words[index];
+
+        index++;
+
+        document.getElementById("content").scrollTop =
+            document.getElementById("content").scrollHeight;
+
+        setTimeout(nextWord, 22);
+    }
+
+    nextWord();
+}
+
+// ==========================================
+// THINKING INDICATOR
+// ==========================================
 
 function showThinking() {
 
-    const row = document.createElement("div");
+    document.getElementById("welcome").style.display = "none";
 
-    row.className = "message-row";
-    row.id = "thinkingRow";
+    const wrapper = document.createElement("div");
 
-    row.innerHTML = `
-        <div class="thinking">
-            <span>Thinking</span>
-            <span class="dots">
-                <i></i><i></i><i></i>
-            </span>
+    wrapper.className = "message";
+
+    wrapper.id = "thinkingMessage";
+
+    wrapper.innerHTML = `
+        <div class="message-avatar">N</div>
+        <div class="message-body">
+            <div class="message-role">NovaAI</div>
+            <div class="thinking">Thinking...</div>
         </div>
     `;
 
-    document.getElementById("messages").appendChild(row);
+    document.getElementById("messages").appendChild(wrapper);
 
-    document.getElementById("chatSection").scrollTop = 999999;
-
-    return row;
-
+    document.getElementById("content").scrollTop =
+        document.getElementById("content").scrollHeight;
 }
 
-/* WORD-BY-WORD RESPONSE */
+function removeThinking() {
 
-async function typeWords(element,text) {
+    const element =
+        document.getElementById("thinkingMessage");
 
-    const words = String(text||"").split(/(\s+)/);
-
-    let output = "";
-
-    for(let i=0;i<words.length;i++) {
-
-        output += words[i];
-
-        element.textContent = output;
-
-        document.getElementById("chatSection").scrollTop = 999999;
-
-        await new Promise(r=>
-            setTimeout(
-                r,
-                Math.min(55,Math.max(12,900/Math.max(words.length,1)))
-            )
-        );
-
-    }
-
+    if (element) element.remove();
 }
 
-/* AI RESPONSE */
-
-function extractAnswer(data) {
-
-    if(typeof data==="string") return data;
-
-    return (
-        data?.choices?.[0]?.message?.content ||
-        data?.reply ||
-        data?.response ||
-        data?.text ||
-        data?.output ||
-        data?.message ||
-        data?.content ||
-        data?.result ||
-        "The AI returned an empty response."
-    );
-
-}
-
-async function askAI(text,mode="chat",imageData=null) {
-
-    const system =
-        mode==="codex"
-        ? "You are NovaAI Codex, an expert programming assistant. Give accurate, complete, copyable code. Explain important steps and use fenced code blocks."
-        : "You are NovaAI, a helpful, clear and accurate AI assistant.";
-
-    const content = imageData
-        ? [
-            {type:"text",text},
-            {
-                type:"image_url",
-                image_url:{url:imageData}
-            }
-          ]
-        : text;
-
-    const messages = [
-        {role:"system",content:system},
-        {role:"user",content}
-    ];
-
-    const {data,error} = await supabase.functions.invoke(
-        "ai-chat",
-        {
-            body:{
-                provider:currentProvider,
-                messages
-            }
-        }
-    );
-
-    if(error) throw error;
-
-    const answer = extractAnswer(data);
-
-    if(!answer || answer==="The AI returned an empty response.") {
-        throw new Error(
-            "No answer was returned. Check your ai-chat Edge Function response."
-        );
-    }
-
-    return answer;
-
-}
-
-/* SEND CHAT MESSAGE */
+// ==========================================
+// SEND MESSAGE USING SUPABASE EDGE FUNCTION
+// ==========================================
 
 async function sendMessage() {
 
-    if(isSending) return;
+    const prompt =
+        document.getElementById("prompt");
 
-    const input = document.getElementById("prompt");
+    const sendButton =
+        document.getElementById("sendButton");
 
-    const text = input.value.trim();
+    const userText = prompt.value.trim();
 
-    if(!text && !attachedImage) return;
+    if (!userText || isGenerating) return;
 
-    isSending = true;
+    isGenerating = true;
 
-    document.getElementById("sendButton").disabled = true;
+    sendButton.disabled = true;
 
-    document.getElementById("welcome").classList.add("hidden");
+    prompt.disabled = true;
 
-    const imageForRequest = attachedImage;
+    prompt.value = "";
 
-    addMessage(
-        text + (imageForRequest ? "\n[Image attached]" : ""),
-        "user"
-    );
+    prompt.style.height = "auto";
 
-    chatHistory.push({
-        role:"user",
-        content:text
+    chatMessages.push({
+        role: "user",
+        content: userText
     });
 
-    input.value = "";
-    input.style.height = "auto";
+    addMessage("user", userText);
 
-    attachedImage = null;
-
-    document.getElementById("attachmentLabel").textContent = "";
-
-    const thinking = showThinking();
+    showThinking();
 
     try {
 
-        const answer = await askAI(
-            text || "Please describe this image.",
-            "chat",
-            imageForRequest
-        );
-
-        thinking.remove();
-
-        const bubble = addMessage("", "ai");
-
-        await typeWords(bubble,answer);
-
-        chatHistory.push({
-            role:"assistant",
-            content:answer
-        });
-
-        lastAnswer = answer;
-
-        if(!activeChatId) {
-            activeChatId = "chat-" + Date.now();
-        }
-
-        saveCurrentChat();
-
-    } catch(err) {
-
-        thinking.remove();
-
-        const msg =
-            "Sorry, NovaAI couldn't get a response. " +
-            (err.message ||
-            "Please check your Supabase ai-chat function and try again.");
-
-        addMessage(msg,"ai");
-
-        chatHistory.push({
-            role:"assistant",
-            content:msg
-        });
-
-        if(!activeChatId) {
-            activeChatId = "chat-" + Date.now();
-        }
-
-        saveCurrentChat();
-
-        console.error("NovaAI chat error:",err);
-
-    } finally {
-
-        isSending = false;
-
-        document.getElementById("sendButton").disabled = false;
-
-        input.focus();
-
-    }
-
-}
-
-function useSuggestion(text) {
-
-    document.getElementById("prompt").value = text;
-
-    document.getElementById("prompt").focus();
-
-}
-
-/* ENTER TO SEND */
-
-document.getElementById("prompt").addEventListener(
-    "keydown",
-    e=>{
-        if(e.key==="Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    }
-);
-
-document.getElementById("prompt").addEventListener(
-    "input",
-    e=>{
-        e.target.style.height = "auto";
-        e.target.style.height =
-            Math.min(e.target.scrollHeight,130) + "px";
-    }
-);
-
-/* IMAGE UPLOAD */
-
-function handleImageUpload(event) {
-
-    const file = event.target.files?.[0];
-
-    if(!file) return;
-
-    if(!file.type.startsWith("image/")) {
-        showNotice("Please choose an image file.");
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = ()=>{
-        attachedImage = reader.result;
-
-        document.getElementById("attachmentLabel").textContent =
-            "Image attached: " + file.name;
-    };
-
-    reader.readAsDataURL(file);
-
-}
-
-/* VOICE INPUT */
-
-function startVoice() {
-
-    const Speech =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
-    if(!Speech) {
-        showNotice(
-            "Speech recognition is not supported in this browser. Try Chrome and allow microphone access."
-        );
-        return;
-    }
-
-    speechRecognition = new Speech();
-
-    speechRecognition.lang = "en-US";
-    speechRecognition.interimResults = true;
-
-    document.getElementById("liveStatus").textContent =
-        "Listening…";
-
-    speechRecognition.onresult = e=>{
-
-        let transcript = "";
-
-        for(let i=e.resultIndex;i<e.results.length;i++) {
-            transcript += e.results[i][0].transcript;
-        }
-
-        document.getElementById("prompt").value = transcript;
-
-    };
-
-    speechRecognition.onerror = e=>{
-
-        document.getElementById("liveStatus").textContent =
-            "Microphone error: " + e.error;
-
-    };
-
-    speechRecognition.onend = ()=>{
-
-        document.getElementById("liveStatus").textContent =
-            "Voice input finished. Press Enter or Send to submit.";
-
-        document.getElementById("prompt").focus();
-
-    };
-
-    speechRecognition.start();
-
-}
-
-/* READ ANSWERS ALOUD */
-
-function speakText(text) {
-
-    if(!("speechSynthesis" in window)) {
-        showNotice("Text-to-speech is not supported in this browser.");
-        return;
-    }
-
-    speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    speechSynthesis.speak(utterance);
-
-}
-
-function readLastAnswer() {
-
-    if(lastAnswer) {
-        speakText(lastAnswer);
-    } else {
-        showNotice("There is no AI answer to read yet.");
-    }
-
-}
-
-/* CODEX */
-
-async function sendCodex() {
-
-    const input = document.getElementById("codexPrompt");
-
-    const text = input.value.trim();
-
-    if(!text) return;
-
-    const box = document.getElementById("codexMessages");
-
-    const user = document.createElement("div");
-
-    user.className = "message user-message";
-    user.style.margin = "10px 0 10px auto";
-    user.textContent = text;
-
-    box.appendChild(user);
-
-    input.value = "";
-
-    const wait = document.createElement("div");
-
-    wait.className = "thinking";
-
-    wait.innerHTML = `
-        Thinking
-        <span class="dots"><i></i><i></i><i></i></span>
-    `;
-
-    box.appendChild(wait);
-
-    try {
-
-        const answer = await askAI(text,"codex");
-
-        wait.remove();
-
-        const reply = document.createElement("pre");
-
-        reply.className = "message ai-message";
-        reply.style.maxWidth = "100%";
-        reply.style.whiteSpace = "pre-wrap";
-        reply.textContent = answer;
-
-        box.appendChild(reply);
-
-        const copy = document.createElement("button");
-
-        copy.className = "feature-action";
-        copy.textContent = "Copy code / answer";
-
-        copy.onclick = ()=>navigator.clipboard?.writeText(answer);
-
-        box.appendChild(copy);
-
-    } catch(err) {
-
-        wait.remove();
-
-        const error = document.createElement("p");
-
-        error.textContent = "Codex error: " + err.message;
-
-        box.appendChild(error);
-
-    }
-
-}
-
-/* IMAGE GENERATION */
-
-async function generateImage() {
-
-    const prompt =
-        document.getElementById("imagePrompt").value.trim();
-
-    if(!prompt) {
-        showNotice("Please describe the image first.");
-        return;
-    }
-
-    const button = document.getElementById("imageButton");
-
-    const result = document.getElementById("imageResult");
-
-    button.disabled = true;
-    button.textContent = "Generating…";
-
-    result.textContent = "Creating your image…";
-
-    try {
-
-        const {data,error} =
-            await supabase.functions.invoke(
-                "image-generate",
+        const { data, error } =
+            await supabaseClient.functions.invoke(
+                "ai-chat",
                 {
-                    body:{prompt}
+                    body: {
+                        provider: currentProvider,
+                        messages: [
+                            {
+                                role: "system",
+                                content:
+                                    "You are NovaAI, a helpful, intelligent AI assistant. Give clear, accurate and useful answers. Format code and explanations clearly."
+                            },
+                            ...chatMessages
+                        ]
+                    }
                 }
             );
 
-        if(error) throw error;
+        if (error) {
 
-        let url =
-            data?.imageUrl ||
-            data?.image_url ||
-            data?.url ||
-            data?.image ||
-            data?.output?.url ||
-            data?.data?.[0]?.url;
+            let errorMessage =
+                error.message || "Edge Function request failed.";
 
-        const b64 =
-            data?.data?.[0]?.b64_json ||
-            data?.b64_json;
+            try {
 
-        if(!url && b64) {
-            url = "data:image/png;base64," + b64;
+                const response = error.context;
+
+                if (response && typeof response.json === "function") {
+
+                    const errorData = await response.json();
+
+                    errorMessage =
+                        errorData.error || errorMessage;
+                }
+
+            } catch (e) {
+                // Keep original error.
+            }
+
+            throw new Error(errorMessage);
         }
 
-        if(!url) {
+        if (!data || data.success !== true || !data.answer) {
+
             throw new Error(
-                "No image URL was returned. Check your image-generate function response."
+                data?.error || "The AI returned an invalid response."
             );
+
         }
 
-        result.innerHTML = "";
+        const answer = data.answer;
 
-        const img = document.createElement("img");
+        removeThinking();
 
-        img.src = url;
-        img.alt = "Generated image";
+        chatMessages.push({
+            role: "assistant",
+            content: answer
+        });
 
-        result.appendChild(img);
+        addMessage("assistant", answer, true);
 
-        const link = document.createElement("a");
+        saveCurrentChat();
 
-        link.href = url;
-        link.download = "novaai-image.png";
-        link.textContent = "Download image";
-        link.style.display = "block";
-        link.style.marginTop = "12px";
-        link.style.color = "var(--accent)";
+    } catch (error) {
 
-        result.appendChild(link);
+        removeThinking();
 
-    } catch(err) {
+        const errorMessage =
+            error.message || "Something went wrong.";
 
-        result.textContent =
-            "Image generation failed: " + err.message;
+        addMessage(
+            "assistant",
+            "Sorry, I couldn't get a response.\n\nError: " +
+            errorMessage
+        );
 
-        console.error(err);
+        console.error("NovaAI Edge Function error:", error);
 
     } finally {
 
-        button.disabled = false;
+        isGenerating = false;
 
-        button.textContent = "✧ Generate Image";
+        sendButton.disabled = false;
+
+        prompt.disabled = false;
+
+        prompt.focus();
+
+    }
+}
+
+// ==========================================
+// ENTER KEY SUPPORT
+// ==========================================
+
+const promptInput =
+    document.getElementById("prompt");
+
+promptInput.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter" && !event.shiftKey) {
+
+        event.preventDefault();
+
+        sendMessage();
 
     }
 
-}
+});
 
-/* CHESS */
+promptInput.addEventListener("input", function() {
 
-let chessGame = null;
-let chessSelected = null;
-let chessFlipped = false;
+    this.style.height = "auto";
 
-const pieceChars = {
-    wp:"♙",wn:"♘",wb:"♗",wr:"♖",wq:"♕",wk:"♔",
-    bp:"♟",bn:"♞",bb:"♝",br:"♜",bq:"♛",bk:"♚"
-};
+    this.style.height =
+        Math.min(this.scrollHeight, 160) + "px";
 
-function resetChess() {
+});
 
-    chessGame = new Chess();
+// ==========================================
+// START APP
+// ==========================================
 
-    chessSelected = null;
-
-    renderChess();
-
-}
-
-function flipChess() {
-
-    chessFlipped = !chessFlipped;
-
-    renderChess();
-
-}
-
-function renderChess() {
-
-    if(!chessGame) {
-        chessGame = new Chess();
-    }
-
-    const board = document.getElementById("chessBoard");
-
-    if(!board) return;
-
-    board.innerHTML = "";
-
-    const files = chessFlipped
-        ? ["h","g","f","e","d","c","b","a"]
-        : ["a","b","c","d","e","f","g","h"];
-
-    const ranks = chessFlipped
-        ? [1,2,3,4,5,6,7,8]
-        : [8,7,6,5,4,3,2,1];
-
-    const legal = chessSelected
-        ? chessGame.moves({
-            square:chessSelected,
-            verbose:true
-          }).map(m=>m.to)
-        : [];
-
-    ranks.forEach((rank,ri)=>{
-
-        files.forEach((file,fi)=>{
-
-            const square = file + rank;
-
-            const piece = chessGame.get(square);
-
-            const el = document.createElement("button");
-
-            el.className =
-                "square " +
-                ((ri+fi)%2===0
-                    ? "light-square"
-                    : "dark-square");
-
-            if(square===chessSelected) {
-                el.classList.add("selected");
-            }
-
-            if(legal.includes(square)) {
-                el.classList.add("hint");
-            }
-
-            el.textContent =
-                piece ? pieceChars[piece.color+piece.type] : "";
-
-            el.setAttribute("aria-label",square);
-
-            el.onclick = ()=>clickChessSquare(square);
-
-            board.appendChild(el);
-
-        });
-
-    });
-
-    const status =
-        chessGame.in_checkmate()
-        ? "Checkmate. Game over."
-        : chessGame.in_draw()
-        ? "Draw."
-        : chessGame.in_check()
-        ? "Check! " +
-          (chessGame.turn()==="w"?"White":"Black") +
-          " to move."
-        : (chessGame.turn()==="w"?"White":"Black") +
-          " to move.";
-
-    document.getElementById("chessStatus").textContent = status;
-
-}
-
-function clickChessSquare(square) {
-
-    if(!chessGame) return;
-
-    const piece = chessGame.get(square);
-
-    if(chessSelected) {
-
-        const move = chessGame.move({
-            from:chessSelected,
-            to:square,
-            promotion:"q"
-        });
-
-        if(move) {
-
-            chessSelected = null;
-
-            renderChess();
-
-            return;
-
-        }
-
-    }
-
-    if(piece && piece.color===chessGame.turn()) {
-        chessSelected = square;
-    } else {
-        chessSelected = null;
-    }
-
-    renderChess();
-
-}
-
-/* GENERAL */
-
-function showNotice(message) {
-    alert(message);
-}
-
-function generateVideo() {
-    showNotice("Video generation is not connected yet.");
-}
-
-initApp();
+initializeApp();
 
 </script>
 
