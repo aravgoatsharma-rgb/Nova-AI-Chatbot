@@ -1,0 +1,1024 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaAI</title>
+
+<style>
+:root {
+    --bg: #09090e;
+    --panel: #111119;
+    --panel2: #181823;
+    --text: #ffffff;
+    --muted: #9999aa;
+    --border: #292938;
+    --purple: #a855f7;
+    --purple2: #7c3aed;
+    --input: #15151e;
+}
+
+body.light {
+    --bg: #f6f5fa;
+    --panel: #ffffff;
+    --panel2: #efedf5;
+    --text: #171321;
+    --muted: #777184;
+    --border: #e5e1ed;
+    --input: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    height: 100dvh;
+    overflow: hidden;
+    transition: background .25s, color .25s;
+}
+
+/* APP */
+
+.app {
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    position: relative;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    width: 275px;
+    height: 100%;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    position: absolute;
+    z-index: 20;
+    left: -290px;
+    top: 0;
+    transition: left .3s ease;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+    letter-spacing: -1px;
+}
+
+.logo span {
+    color: var(--purple);
+}
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    color: var(--text);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 19px;
+}
+
+.new-chat {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(100deg, #9333ea, #c084fc);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 25px;
+}
+
+.side-label {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 10px 0 12px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px;
+    border-radius: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 5px;
+    transition: .2s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background: var(--panel2);
+    color: var(--text);
+}
+
+.nav-icon {
+    font-size: 19px;
+    width: 22px;
+    text-align: center;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 5px;
+    border-top: 1px solid var(--border);
+}
+
+.avatar {
+    width: 37px;
+    height: 37px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #9333ea, #c084fc);
+    color: white;
+    font-weight: bold;
+}
+
+.profile-name {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.profile-email {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* OVERLAY */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 15;
+    display: none;
+}
+
+.overlay.show {
+    display: block;
+}
+
+/* MAIN */
+
+.main {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.header {
+    height: 65px;
+    min-height: 65px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.model-label {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--panel2);
+    padding: 7px 10px;
+    border-radius: 20px;
+}
+
+/* CHAT AREA */
+
+.chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    scroll-behavior: smooth;
+}
+
+.welcome {
+    margin: auto;
+    text-align: center;
+    max-width: 550px;
+    padding: 20px 10px;
+}
+
+.welcome-orb {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #e9c5ff, #a855f7 35%, #4c1d95 75%);
+    box-shadow: 0 0 45px rgba(168,85,247,.35);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-9px) scale(1.04); }
+}
+
+.welcome h1 {
+    font-size: clamp(27px, 6vw, 40px);
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+}
+
+.welcome h1 span {
+    color: var(--purple);
+}
+
+.welcome p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.suggestion {
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.suggestion:hover {
+    border-color: var(--purple);
+}
+
+.suggestion span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 7px;
+}
+
+/* MESSAGES */
+
+.message-row {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 85%;
+    padding: 13px 16px;
+    border-radius: 17px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.user-message {
+    align-self: flex-end;
+    background: linear-gradient(120deg, #7c3aed, #9333ea);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.ai-message {
+    align-self: flex-start;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-bottom-left-radius: 5px;
+}
+
+/* INPUT */
+
+.composer-wrap {
+    width: 100%;
+    padding: 12px 16px 20px;
+    background: var(--bg);
+}
+
+.composer {
+    max-width: 790px;
+    margin: 0 auto;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.12);
+}
+
+.composer textarea {
+    width: 100%;
+    min-height: 32px;
+    max-height: 120px;
+    resize: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    padding: 9px 9px 5px;
+}
+
+.composer textarea::placeholder {
+    color: var(--muted);
+}
+
+.composer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 3px 1px;
+}
+
+.tool-buttons {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+}
+
+.tool-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 19px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.tool-btn:hover {
+    background: var(--panel2);
+    color: var(--purple);
+}
+
+.send-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: var(--purple);
+    color: white;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.disclaimer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 10px;
+}
+
+/* FEATURE VIEWS */
+
+.feature-view {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px 18px;
+    text-align: center;
+}
+
+.feature-view.active {
+    display: block;
+}
+
+.feature-view h1 {
+    font-size: 28px;
+    margin: 25px 0 10px;
+}
+
+.feature-view p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.feature-card {
+    max-width: 550px;
+    margin: 25px auto;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+}
+
+.feature-action {
+    margin-top: 18px;
+    padding: 13px 22px;
+    border: none;
+    border-radius: 25px;
+    color: white;
+    background: linear-gradient(100deg, #9333ea, #c084fc);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.feature-input {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--input);
+    color: var(--text);
+    outline: none;
+}
+
+.live-orb {
+    width: 170px;
+    height: 170px;
+    margin: 35px auto;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f1d5ff, #b35cff 35%, #6d28d9 70%, #25104b);
+    box-shadow: 0 0 60px rgba(168,85,247,.4);
+    animation: float 3s ease-in-out infinite;
+}
+
+.live-orb.active {
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%,100% { transform: scale(1); box-shadow: 0 0 40px #9333ea; }
+    50% { transform: scale(1.12); box-shadow: 0 0 90px #c084fc; }
+}
+
+.image-placeholder {
+    min-height: 190px;
+    display: grid;
+    place-items: center;
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    color: var(--muted);
+    margin-top: 15px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media(min-width: 900px) {
+    .sidebar {
+        left: -290px;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+}
+
+@media(max-width: 500px) {
+    .header {
+        padding: 0 12px;
+    }
+
+    .chat-area {
+        padding: 15px 12px;
+    }
+
+    .composer-wrap {
+        padding: 8px 10px 12px;
+    }
+
+    .suggestions {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .suggestion {
+        padding: 12px 10px;
+    }
+
+    .model-label {
+        display: none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-top">
+            <div class="logo">Nova<span>AI</span></div>
+            <button class="icon-btn" onclick="closeSidebar()">✕</button>
+        </div>
+
+        <button class="new-chat" onclick="newChat()">＋ New Chat</button>
+
+        <div class="side-label">Workspace</div>
+
+        <div class="nav-item active" onclick="showSection('chat', this)">
+            <span class="nav-icon">◈</span> Chats
+        </div>
+
+        <div class="nav-item" onclick="showSection('codex', this)">
+            <span class="nav-icon">⌘</span> Codex
+        </div>
+
+        <div class="nav-item" onclick="showSection('image', this)">
+            <span class="nav-icon">▧</span> Image Generation
+        </div>
+
+        <div class="nav-item" onclick="showSection('video', this)">
+            <span class="nav-icon">▷</span> Video Generation
+        </div>
+
+        <div class="nav-item" onclick="showSection('live', this)">
+            <span class="nav-icon">◉</span> Live AI
+        </div>
+
+        <div class="nav-item" onclick="showSection('chess', this)">
+            <span class="nav-icon">♟</span> Chess
+        </div>
+
+        <div class="side-label">Personal</div>
+
+        <div class="nav-item" onclick="showSection('settings', this)">
+            <span class="nav-icon">⚙</span> Settings
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="profile">
+                <div class="avatar">N</div>
+                <div>
+                    <div class="profile-name">NovaAI User</div>
+                    <div class="profile-email">Your AI workspace</div>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <header class="header">
+
+            <div class="header-left">
+                <button class="icon-btn" onclick="openSidebar()">☰</button>
+                <div class="header-title" id="headerTitle">NovaAI</div>
+            </div>
+
+            <div class="header-right">
+                <div class="model-label">NovaAI Assistant</div>
+                <button class="icon-btn" onclick="toggleTheme()" id="themeButton">☀</button>
+            </div>
+
+        </header>
+
+        <!-- CHAT -->
+        <section class="chat-area" id="chatSection">
+
+            <div class="welcome" id="welcome">
+
+                <div class="welcome-orb"></div>
+
+                <h1>Hello, welcome to <span>NovaAI</span></h1>
+
+                <p>
+                    Your intelligent assistant for ideas, coding,
+                    creativity and everything in between.
+                </p>
+
+                <div class="suggestions">
+
+                    <button class="suggestion" onclick="useSuggestion('Help me write some code')">
+                        ⌘ Code something
+                        <span>Build and debug projects</span>
+                    </button>
+
+                    <button class="suggestion" onclick="showSection('image')">
+                        ▧ Create an image
+                        <span>Turn ideas into visuals</span>
+                    </button>
+
+                    <button class="suggestion" onclick="showSection('live')">
+                        ◉ Start Live AI
+                        <span>Talk with NovaAI</span>
+                    </button>
+
+                    <button class="suggestion" onclick="useSuggestion('Help me learn something new')">
+                        ✧ Learn something
+                        <span>Explore new ideas</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="messages"></div>
+
+        </section>
+
+        <!-- CHAT COMPOSER -->
+        <div class="composer-wrap" id="composerWrap">
+
+            <div class="composer">
+
+                <textarea id="prompt" rows="1"
+                    placeholder="Message NovaAI..."></textarea>
+
+                <div class="composer-bottom">
+
+                    <div class="tool-buttons">
+                        <button class="tool-btn" title="Upload file"
+                            onclick="showNotice('File upload will be connected next.')">＋</button>
+
+                        <button class="tool-btn" title="Generate image"
+                            onclick="showSection('image')">▧</button>
+
+                        <button class="tool-btn" title="Live AI"
+                            onclick="showSection('live')">◉</button>
+                    </div>
+
+                    <button class="send-btn" onclick="sendMessage()">↑</button>
+
+                </div>
+
+            </div>
+
+            <div class="disclaimer">
+                NovaAI can make mistakes. Check important information.
+            </div>
+
+        </div>
+
+        <!-- IMAGE GENERATION -->
+        <section class="feature-view" id="imageSection">
+            <h1>✧ Image Generation</h1>
+            <p>Transform your imagination into images.</p>
+
+            <div class="feature-card">
+                <input class="feature-input" id="imagePrompt"
+                    placeholder="Describe the image you want to create...">
+
+                <div class="image-placeholder" id="imageResult">
+                    Your generated image will appear here.
+                </div>
+
+                <button class="feature-action" onclick="generateImage()">
+                    ✧ Generate Image
+                </button>
+            </div>
+        </section>
+
+        <!-- VIDEO GENERATION -->
+        <section class="feature-view" id="videoSection">
+            <h1>▷ Video Generation</h1>
+            <p>Create videos from text prompts.</p>
+
+            <div class="feature-card">
+                <input class="feature-input" id="videoPrompt"
+                    placeholder="Describe your video...">
+
+                <div class="image-placeholder" id="videoResult">
+                    Your generated video will appear here.
+                </div>
+
+                <button class="feature-action" onclick="generateVideo()">
+                    Generate Video
+                </button>
+            </div>
+        </section>
+
+        <!-- LIVE AI -->
+        <section class="feature-view" id="liveSection">
+            <h1>◉ NovaAI Live</h1>
+            <p>Have a natural voice conversation with your AI.</p>
+
+            <div class="live-orb" id="liveOrb"></div>
+
+            <p id="liveStatus">Ready to start your conversation</p>
+
+            <button class="feature-action" onclick="toggleLive()" id="liveButton">
+                Start Live Conversation
+            </button>
+
+            <p style="margin-top:20px;font-size:12px">
+                Microphone and AI voice connection will be integrated next.
+            </p>
+        </section>
+
+        <!-- CODEX -->
+        <section class="feature-view" id="codexSection">
+            <h1>⌘ NovaAI Codex</h1>
+            <p>Your AI coding workspace.</p>
+
+            <div class="feature-card">
+                <textarea class="feature-input" rows="6"
+                    placeholder="Describe the code you want to generate..."></textarea>
+                <button class="feature-action"
+                    onclick="showNotice('Codex AI connection will be added next.')">
+                    Generate Code
+                </button>
+            </div>
+        </section>
+
+        <!-- CHESS -->
+        <section class="feature-view" id="chessSection">
+            <h1>♟ NovaAI Chess</h1>
+            <p>Play chess and improve your strategy.</p>
+
+            <div class="feature-card">
+                <div style="font-size:65px;margin:25px">♟ ♞ ♜</div>
+                <button class="feature-action"
+                    onclick="showNotice('Chess game will be connected next.')">
+                    Open Chess
+                </button>
+            </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="feature-view" id="settingsSection">
+            <h1>⚙ Settings</h1>
+            <p>Customize your NovaAI experience.</p>
+
+            <div class="feature-card" style="text-align:left">
+                <h3>Appearance</h3>
+                <p style="margin-top:8px">Choose your preferred theme.</p>
+                <button class="feature-action" onclick="toggleTheme()">
+                    Switch Theme
+                </button>
+            </div>
+
+            <div class="feature-card" style="text-align:left">
+                <h3>AI Provider</h3>
+                <p style="margin-top:8px">Your existing providers: Groq and Gemini.</p>
+                <p style="margin-top:8px">Provider switching will be connected to your backend.</p>
+            </div>
+
+            <div class="feature-card" style="text-align:left">
+                <h3>Account</h3>
+                <button class="feature-action"
+                    onclick="showNotice('Sign out will be connected to Supabase next.')">
+                    Sign Out
+                </button>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+
+/* SIDEBAR */
+
+function openSidebar() {
+    document.getElementById("sidebar").classList.add("open");
+    document.getElementById("overlay").classList.add("show");
+}
+
+function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("show");
+}
+
+/* THEME */
+
+function toggleTheme() {
+    document.body.classList.toggle("light");
+
+    const light = document.body.classList.contains("light");
+
+    localStorage.setItem("novaai-theme", light ? "light" : "dark");
+
+    document.getElementById("themeButton").textContent =
+        light ? "☾" : "☀";
+}
+
+if (localStorage.getItem("novaai-theme") === "light") {
+    document.body.classList.add("light");
+    document.getElementById("themeButton").textContent = "☾";
+}
+
+/* NAVIGATION */
+
+const sections = [
+    "chat", "image", "video", "live",
+    "codex", "chess", "settings"
+];
+
+function showSection(name, clickedItem) {
+    closeSidebar();
+
+    sections.forEach(section => {
+        const element = document.getElementById(section + "Section");
+        if (element) element.classList.remove("active");
+    });
+
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.classList.remove("active");
+    });
+
+    if (name === "chat") {
+        document.getElementById("chatSection").style.display = "flex";
+        document.getElementById("composerWrap").style.display = "block";
+    } else {
+        document.getElementById("chatSection").style.display = "none";
+        document.getElementById("composerWrap").style.display = "none";
+        document.getElementById(name + "Section").classList.add("active");
+    }
+
+    if (clickedItem) clickedItem.classList.add("active");
+
+    const titles = {
+        chat: "NovaAI",
+        image: "Image Generation",
+        video: "Video Generation",
+        live: "Live AI",
+        codex: "Codex",
+        chess: "Chess",
+        settings: "Settings"
+    };
+
+    document.getElementById("headerTitle").textContent = titles[name] || "NovaAI";
+}
+
+/* CHAT */
+
+function addMessage(text, type) {
+    const messages = document.getElementById("messages");
+    const row = document.createElement("div");
+    row.className = "message-row";
+
+    const bubble = document.createElement("div");
+    bubble.className = "message " +
+        (type === "user" ? "user-message" : "ai-message");
+
+    bubble.textContent = text;
+
+    row.appendChild(bubble);
+    messages.appendChild(row);
+
+    document.getElementById("chatSection").scrollTop =
+        document.getElementById("chatSection").scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById("prompt");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    document.getElementById("welcome").classList.add("hidden");
+
+    addMessage(text, "user");
+    input.value = "";
+
+    addMessage(
+        "Your message is ready. Connect the NovaAI Groq/Gemini Edge Function to receive real AI responses.",
+        "ai"
+    );
+}
+
+function useSuggestion(text) {
+    document.getElementById("prompt").value = text;
+    document.getElementById("prompt").focus();
+}
+
+function newChat() {
+    document.getElementById("messages").innerHTML = "";
+    document.getElementById("welcome").classList.remove("hidden");
+    document.getElementById("prompt").value = "";
+    showSection("chat");
+}
+
+/* ENTER TO SEND */
+
+document.getElementById("prompt").addEventListener("keydown", function(event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+
+/* IMAGE GENERATION */
+
+function generateImage() {
+    const prompt = document.getElementById("imagePrompt").value.trim();
+
+    if (!prompt) {
+        showNotice("Please describe the image first.");
+        return;
+    }
+
+    showNotice("Image generation API will be connected next.");
+}
+
+/* VIDEO GENERATION */
+
+function generateVideo() {
+    const prompt = document.getElementById("videoPrompt").value.trim();
+
+    if (!prompt) {
+        showNotice("Please describe your video first.");
+        return;
+    }
+
+    showNotice("Video generation API will be connected next.");
+}
+
+/* LIVE AI */
+
+let liveActive = false;
+
+function toggleLive() {
+    liveActive = !liveActive;
+
+    const orb = document.getElementById("liveOrb");
+    const button = document.getElementById("liveButton");
+    const status = document.getElementById("liveStatus");
+
+    orb.classList.toggle("active", liveActive);
+
+    button.textContent = liveActive
+        ? "End Conversation"
+        : "Start Live Conversation";
+
+    status.textContent = liveActive
+        ? "Live interface preview — voice connection is not active yet."
+        : "Ready to start your conversation";
+}
+
+/* NOTIFICATION */
+
+function showNotice(text) {
+    alert(text);
+}
+
+</script>
+
+</body>
+</html>

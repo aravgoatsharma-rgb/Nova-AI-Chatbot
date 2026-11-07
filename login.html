@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | NovaAI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: #08080d;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 420px;
+    background: #111119;
+    padding: 38px 30px;
+    border: 1px solid #292938;
+    border-radius: 18px;
+}
+
+.logo {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.logo span {
+    color: #8b5cf6;
+}
+
+.subtitle {
+    text-align: center;
+    color: #9999aa;
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 23px;
+    margin-bottom: 22px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #dddded;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    background: #1b1b27;
+    border: 1px solid #343443;
+    border-radius: 9px;
+    color: white;
+    outline: none;
+    margin-bottom: 18px;
+}
+
+input:focus {
+    border-color: #8b5cf6;
+}
+
+.forgot {
+    display: block;
+    text-align: right;
+    color: #a78bfa;
+    font-size: 13px;
+    text-decoration: none;
+    margin: -7px 0 20px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.signin {
+    background: #8b5cf6;
+    color: white;
+}
+
+.google {
+    background: white;
+    color: #222;
+    margin-top: 18px;
+}
+
+.google:hover {
+    background: #eeeeee;
+}
+
+.signin:hover {
+    background: #7543df;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #777;
+    margin-top: 22px;
+    font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #343443;
+}
+
+.bottom {
+    text-align: center;
+    color: #9999aa;
+    margin-top: 25px;
+    font-size: 14px;
+}
+
+.bottom a {
+    color: #a78bfa;
+    text-decoration: none;
+}
+
+#message {
+    margin-top: 16px;
+    font-size: 13px;
+    text-align: center;
+    color: #ff7777;
+    overflow-wrap: anywhere;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">Nova<span>AI</span></div>
+
+    <p class="subtitle">Your AI. Your World.</p>
+
+    <h2>Welcome Back</h2>
+
+    <form id="loginForm">
+
+        <label>Email Address</label>
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter your email"
+            required
+        >
+
+        <label>Password</label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter your password"
+            required
+        >
+
+        <a href="#" class="forgot" id="forgotPassword">
+            Forgot password?
+        </a>
+
+        <button type="submit" class="signin" id="signinBtn">
+            Sign In
+        </button>
+
+    </form>
+
+    <div class="divider">OR</div>
+
+    <button class="google" id="googleBtn" type="button">
+        🌐 Continue with Google
+    </button>
+
+    <p id="message"></p>
+
+    <div class="bottom">
+        Don't have an account?
+        <a href="register.html">Create Account</a>
+    </div>
+
+</div>
+
+<script>
+
+// SUPABASE CONNECTION
+
+const SUPABASE_URL =
+"https://lcitadmsgfwxemvcyaex.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_0J0LMASleqkhThJP4dT8Kg_NaL3RL06";
+
+const db = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+// HOME PAGE URL
+
+const HOME_URL = new URL(
+    "home.html",
+    window.location.href
+).href;
+
+// MESSAGE
+
+function showMessage(message, success = false) {
+    const box = document.getElementById("message");
+    box.textContent = message;
+    box.style.color = success ? "#7CFC98" : "#ff7777";
+}
+
+// CHECK EXISTING SESSION
+
+async function checkSession() {
+    const { data, error } = await db.auth.getSession();
+
+    if (!error && data.session) {
+        window.location.replace(HOME_URL);
+    }
+}
+
+checkSession();
+
+// EMAIL AND PASSWORD LOGIN
+
+document.getElementById("loginForm")
+.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    const button = document.getElementById("signinBtn");
+
+    button.disabled = true;
+    button.textContent = "Signing in...";
+
+    showMessage("");
+
+    try {
+
+        const { data, error } =
+        await db.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+            window.location.replace(HOME_URL);
+        }
+
+    } catch (error) {
+
+        showMessage(error.message);
+
+        button.disabled = false;
+        button.textContent = "Sign In";
+
+    }
+
+});
+
+// GOOGLE AUTHENTICATION
+
+document.getElementById("googleBtn")
+.addEventListener("click", async function() {
+
+    const button = document.getElementById("googleBtn");
+
+    button.disabled = true;
+    button.textContent = "Connecting to Google...";
+
+    showMessage("");
+
+    try {
+
+        const { error } = await db.auth.signInWithOAuth({
+
+            provider: "google",
+
+            options: {
+                redirectTo: HOME_URL
+            }
+
+        });
+
+        if (error) throw error;
+
+    } catch (error) {
+
+        showMessage(error.message);
+
+        button.disabled = false;
+        button.textContent = "🌐 Continue with Google";
+
+    }
+
+});
+
+// FORGOT PASSWORD
+
+document.getElementById("forgotPassword")
+.addEventListener("click", async function(e) {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        showMessage("Enter your email address first.");
+        return;
+    }
+
+    const { error } = await db.auth.resetPasswordForEmail(
+        email,
+        {
+            redirectTo: new URL("login.html", window.location.href).href
+        }
+    );
+
+    if (error) {
+        showMessage(error.message);
+    } else {
+        showMessage("Password reset email sent!", true);
+    }
+
+});
+
+</script>
+
+</body>
+</html>
