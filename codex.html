@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex | NovaAI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#090a0b;--panel:#15181b;--border:#2b3035;--text:#f5f6f7;--muted:#a0a5aa}
+*{box-sizing:border-box;margin:0;padding:0}body{height:100vh;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;display:flex;flex-direction:column}
+header{height:62px;display:flex;align-items:center;gap:13px;padding:0 20px;border-bottom:1px solid var(--border)}
+header img{width:34px;height:34px;object-fit:contain;background:#fff;border-radius:9px;padding:3px}
+header strong{font-size:18px}header a{margin-left:auto;color:#fff;text-decoration:none;border:1px solid var(--border);padding:9px 13px;border-radius:20px;font-size:13px}
+main{width:min(900px,100%);margin:0 auto;padding:35px 20px;flex:1;display:flex;flex-direction:column;min-height:0}
+h1{font-size:28px;margin-bottom:8px} .muted{color:var(--muted);font-size:13px;margin-bottom:25px}
+#output{flex:1;overflow:auto;white-space:pre-wrap;line-height:1.65;background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:18px;margin-bottom:15px;min-height:180px}
+textarea{width:100%;min-height:115px;resize:vertical;background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:15px;color:#fff;outline:none;font:14px/1.6 Arial}
+.row{display:flex;justify-content:space-between;gap:10px;margin-top:12px;align-items:center}
+select,button{background:#f5f5f5;color:#111;border:0;border-radius:10px;padding:11px 15px;font-weight:600}
+select{background:var(--panel);border:1px solid var(--border);color:#fff}
+button:disabled{opacity:.5}pre{white-space:pre-wrap}
+@media(max-width:600px){main{padding:25px 13px}.row{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header><img src="applogo.jpg" alt="NovaAI"><strong>NovaAI Codex</strong><a href="home.html">← Back to chat</a></header>
+<main>
+<h1>Code with NovaAI</h1>
+<p class="muted">Ask for code, debugging help, explanations, or improvements.</p>
+<div id="output">Your coding assistant is ready. Describe what you want to build.</div>
+<textarea id="prompt" placeholder="Example: Build a responsive HTML login page with validation..."></textarea>
+<div class="row">
+<select id="provider"><option value="groq">Groq AI</option><option value="gemini">Google Gemini</option></select>
+<button id="run" onclick="runCodex()">Generate code →</button>
+</div>
+</main>
+<script>
+const SUPABASE_URL="https://lcitadmsgfwxemvcyaex.supabase.co";
+const SUPABASE_KEY="sb_publishable_0J0LMASleqkhThJP4dT8Kg_NaL3RL06";
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+async function init(){const {data,error}=await client.auth.getSession();if(error||!data.session)location.replace("login.html");}
+async function runCodex(){
+ const prompt=document.getElementById("prompt").value.trim();if(!prompt)return;
+ const button=document.getElementById("run"),output=document.getElementById("output");
+ button.disabled=true;output.textContent="NovaAI Codex is thinking...";
+ try{
+  const {data,error}=await client.functions.invoke("ai-chat",{body:{provider:document.getElementById("provider").value,messages:[
+   {role:"system",content:"You are NovaAI Codex, an expert software engineer. Produce complete, correct, copyable code when requested. Explain important setup steps briefly. Put code in Markdown fenced blocks."},
+   {role:"user",content:prompt}
+  ]}});
+  if(error)throw error;
+  if(!data?.success||!data.answer)throw new Error(data?.error||"No answer returned.");
+  output.textContent=data.answer;
+ }catch(e){output.textContent="Error: "+(e.message||"Request failed.");}
+ finally{button.disabled=false;}
+}
+init();
+</script>
+</body>
+</html>
