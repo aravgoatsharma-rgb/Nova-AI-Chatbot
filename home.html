@@ -6,11 +6,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NovaAI</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root{--bg:#090a0b;--panel:#111315;--panel2:#191c1f;--text:#f6f7f8;--muted:#9a9da2;--border:#292d31;--accent:#fff;--accentText:#111;--assistant:#202428;--user:#30363b;--glow:#a6e8ff}
+:root{
+--bg:#090a0b;
+--panel:#111315;
+--panel2:#191c1f;
+--text:#f6f7f8;
+--muted:#9a9da2;
+--border:#292d31;
+--accent:#fff;
+--accentText:#111;
+--assistant:#202428;
+--user:#30363b;
+--glow:#a6e8ff
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif}
-body.light{--bg:#ffffff;--panel:#ffffff;--panel2:#f4f5f6;--text:#17191b;--muted:#70767c;--border:#e2e5e8;--assistant:#f0f2f4;--user:#e2f4ff}
+
+body{
+height:100vh;
+height:100dvh;
+overflow:hidden;
+background:var(--bg);
+color:var(--text);
+font-family:Inter,Arial,Helvetica,sans-serif
+}
+
+body.light{
+--bg:#ffffff;
+--panel:#ffffff;
+--panel2:#f4f5f6;
+--text:#17191b;
+--muted:#70767c;
+--border:#e2e5e8;
+--assistant:#f0f2f4;
+--user:#e2f4ff
+}
+
 body.light .sidebar{background:#f7f8f9}
 body.light .topbar{border-bottom-color:var(--border)}
 body.light .input-box{background:#fff;border-color:#d9dde1}
@@ -23,189 +56,792 @@ body.light .message-role{color:#42484d}
 body.light .provider-label{color:#555}
 body.light .new-chat,body.light .setting-card,body.light .setting-select,body.light .action-button{background:#fff;color:#17191b;border-color:#e0e4e7}
 body.light .send-button{background:#17191b;color:#fff}
-button,input,textarea{font:inherit}button{cursor:pointer}
-.app{display:flex;width:100%;height:100vh}
-.sidebar{width:264px;min-width:264px;height:100%;background:#101214;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10;transition:transform .25s}
+
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+
+.app{
+display:flex;
+width:100%;
+height:100vh;
+height:100dvh
+}
+
+.sidebar{
+width:264px;
+min-width:264px;
+height:100%;
+background:#101214;
+border-right:1px solid var(--border);
+display:flex;
+flex-direction:column;
+z-index:10;
+transition:transform .25s,visibility .25s
+}
+
 .sidebar.hidden{margin-left:-264px}
+
 .sidebar-top{padding:20px 16px 12px}
-.brand{display:flex;align-items:center;gap:11px;margin-bottom:25px;padding:0 5px}
-.brand img{width:36px;height:36px;object-fit:contain;background:#fff;border-radius:11px;padding:3px}
-.brand span{font-size:20px;font-weight:750;letter-spacing:-.4px}
-.new-chat{width:100%;padding:12px;background:#202326;border:1px solid var(--border);border-radius:12px;color:var(--text);text-align:left;font-size:14px}
+
+.brand{
+display:flex;
+align-items:center;
+gap:11px;
+margin-bottom:25px;
+padding:0 5px
+}
+
+.brand img{
+width:36px;
+height:36px;
+object-fit:contain;
+background:#fff;
+border-radius:11px;
+padding:3px
+}
+
+.brand span{
+font-size:20px;
+font-weight:750;
+letter-spacing:-.4px
+}
+
+.new-chat{
+width:100%;
+padding:12px;
+background:#202326;
+border:1px solid var(--border);
+border-radius:12px;
+color:var(--text);
+text-align:left;
+font-size:14px
+}
+
 .new-chat:hover,.nav-button:hover,.history-item:hover{background:#292d31}
-.sidebar-scroll{flex:1;overflow-y:auto;padding:18px 12px}
-.sidebar-scroll::-webkit-scrollbar{width:5px}.sidebar-scroll::-webkit-scrollbar-thumb{background:#555;border-radius:10px}
-.section-label{color:var(--muted);font-size:10px;font-weight:bold;letter-spacing:1.2px;padding:10px 9px}
-.nav-button{width:100%;display:flex;align-items:center;gap:12px;padding:12px 10px;border:0;border-radius:10px;background:transparent;color:var(--text);text-align:left;font-size:14px;margin-bottom:3px}
+
+.sidebar-scroll{
+flex:1;
+overflow-y:auto;
+padding:18px 12px
+}
+
+.sidebar-scroll::-webkit-scrollbar{width:5px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:#555;border-radius:10px}
+
+.section-label{
+color:var(--muted);
+font-size:10px;
+font-weight:bold;
+letter-spacing:1.2px;
+padding:10px 9px
+}
+
+.nav-button{
+width:100%;
+display:flex;
+align-items:center;
+gap:12px;
+padding:12px 10px;
+border:0;
+border-radius:10px;
+background:transparent;
+color:var(--text);
+text-align:left;
+font-size:14px;
+margin-bottom:3px
+}
+
 .nav-button.active{background:#25292d;font-weight:bold}
+
 .nav-icon{width:20px;text-align:center;font-size:17px}
-.history-item{padding:10px;font-size:13px;border-radius:8px;cursor:pointer;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sidebar-bottom{padding:14px;border-top:1px solid var(--border)}
+
+.history-item{
+padding:10px;
+font-size:13px;
+border-radius:8px;
+cursor:pointer;
+color:var(--muted);
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis
+}
+
+.sidebar-bottom{
+padding:14px;
+border-top:1px solid var(--border)
+}
+
 .profile{display:flex;align-items:center;gap:10px;min-width:0}
-.avatar{width:36px;height:36px;border-radius:50%;background:#f5f5f5;color:#111;display:grid;place-items:center;font-weight:bold;flex-shrink:0}
-.profile-info{flex:1;min-width:0}.profile-name{font-size:13px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.profile-email{color:var(--muted);font-size:11px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.signout{border:0;background:transparent;color:var(--muted);font-size:18px;padding:5px}
-.main{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;background:var(--bg)}
-.topbar{height:62px;min-height:62px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #202326;gap:15px}
-.icon-button{border:0;background:transparent;color:var(--text);font-size:21px;padding:7px;border-radius:8px}
-.icon-button:hover{background:#24282c}.top-title{font-size:15px;font-weight:bold;flex:1}
-.provider-label{color:#c2c5c8;font-size:11px;border:1px solid var(--border);border-radius:20px;padding:7px 12px}
-.content{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
-.chat-page{display:flex;flex-direction:column;flex:1;min-height:0}
-.chat-area{width:100%;max-width:900px;margin:0 auto;padding:32px 24px 24px;flex:1}
+
+.avatar{
+width:36px;
+height:36px;
+border-radius:50%;
+background:#f5f5f5;
+color:#111;
+display:grid;
+place-items:center;
+font-weight:bold;
+flex-shrink:0
+}
+
+.profile-info{flex:1;min-width:0}
+
+.profile-name{
+font-size:13px;
+font-weight:bold;
+overflow:hidden;
+text-overflow:ellipsis;
+white-space:nowrap
+}
+
+.profile-email{
+color:var(--muted);
+font-size:11px;
+margin-top:4px;
+overflow:hidden;
+text-overflow:ellipsis;
+white-space:nowrap
+}
+
+.signout{
+border:0;
+background:transparent;
+color:var(--muted);
+font-size:18px;
+padding:5px
+}
+
+.main{
+flex:1;
+min-width:0;
+height:100%;
+display:flex;
+flex-direction:column;
+background:var(--bg)
+}
+
+.topbar{
+height:62px;
+min-height:62px;
+display:flex;
+align-items:center;
+padding:0 20px;
+border-bottom:1px solid #202326;
+gap:15px
+}
+
+.icon-button{
+border:0;
+background:transparent;
+color:var(--text);
+font-size:21px;
+padding:7px;
+border-radius:8px
+}
+
+.icon-button:hover{background:#24282c}
+
+.top-title{font-size:15px;font-weight:bold;flex:1}
+
+.provider-label{
+color:#c2c5c8;
+font-size:11px;
+border:1px solid var(--border);
+border-radius:20px;
+padding:7px 12px
+}
+
+.content{
+flex:1;
+min-height:0;
+overflow-y:auto;
+display:flex;
+flex-direction:column
+}
+
+.chat-page{
+display:flex;
+flex-direction:column;
+flex:1;
+min-height:0
+}
+
+.chat-area{
+width:100%;
+max-width:900px;
+margin:0 auto;
+padding:32px 24px 24px;
+flex:1
+}
+
 .welcome{text-align:center;margin:90px auto 40px}
-.welcome img{width:68px;height:68px;object-fit:contain;background:#fff;border-radius:20px;padding:5px;margin-bottom:20px}
+
+.welcome img{
+width:68px;
+height:68px;
+object-fit:contain;
+background:#fff;
+border-radius:20px;
+padding:5px;
+margin-bottom:20px
+}
+
 .welcome h1{font-size:30px;margin-bottom:12px;letter-spacing:-.8px}
 .welcome p{color:var(--muted);font-size:14px}
+
 .messages{display:flex;flex-direction:column;gap:20px;padding-bottom:22px}
-.message{display:flex;gap:12px;align-items:flex-start;animation:appear .2s ease}
-@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.message-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:12px;font-weight:bold;background:#fff;color:#111}
+
+.message{
+display:flex;
+gap:12px;
+align-items:flex-start;
+animation:appear .2s ease
+}
+
+@keyframes appear{
+from{opacity:0;transform:translateY(5px)}
+to{opacity:1;transform:translateY(0)}
+}
+
+.message-avatar{
+width:32px;
+height:32px;
+border-radius:50%;
+flex-shrink:0;
+display:grid;
+place-items:center;
+font-size:12px;
+font-weight:bold;
+background:#fff;
+color:#111
+}
+
 .message-body{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}
-.message-role{font-size:12px;font-weight:bold;margin:1px 0 7px;color:#d9dde0}
-.message-text{white-space:pre-wrap;line-height:1.7;padding:13px 16px;border-radius:5px 16px 16px 16px;background:var(--assistant);border:1px solid #30363b;color:#f1f3f4}
+
+.message-role{
+font-size:12px;
+font-weight:bold;
+margin:1px 0 7px;
+color:#d9dde0
+}
+
+.message-text{
+white-space:pre-wrap;
+line-height:1.7;
+padding:13px 16px;
+border-radius:5px 16px 16px 16px;
+background:var(--assistant);
+border:1px solid #30363b;
+color:#f1f3f4
+}
+
 .message.user .message-avatar{background:#bdeaff}
-.message.user .message-text{background:#dff4ff;color:#17212a;border-color:#c2eaff}
-.thinking{color:#c0c4c8;font-size:13px;animation:pulse 1s infinite alternate}
-@keyframes pulse{from{opacity:.4}to{opacity:1}}
-.message-image{display:block;max-width:min(100%,520px);max-height:520px;object-fit:contain;border-radius:13px;border:1px solid var(--border);margin-top:10px;background:#151719}
+
+.message.user .message-text{
+background:#dff4ff;
+color:#17212a;
+border-color:#c2eaff
+}
+
+.thinking{
+color:#c0c4c8;
+font-size:13px;
+animation:pulse 1s infinite alternate
+}
+
+@keyframes pulse{
+from{opacity:.4}
+to{opacity:1}
+}
+
+.message-image{
+display:block;
+max-width:min(100%,520px);
+max-height:520px;
+object-fit:contain;
+border-radius:13px;
+border:1px solid var(--border);
+margin-top:10px;
+background:#151719
+}
+
 .image-actions{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
-.image-action{border:1px solid var(--border);color:var(--text);background:#202326;padding:8px 11px;border-radius:9px;font-size:12px;text-decoration:none}
-.image-generating{max-width:520px;min-height:180px;border:1px solid var(--border);border-radius:15px;background:#171a1d;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--muted);margin-top:8px}
-.spinner{width:29px;height:29px;border:3px solid #383d42;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+
+.image-action{
+border:1px solid var(--border);
+color:var(--text);
+background:#202326;
+padding:8px 11px;
+border-radius:9px;
+font-size:12px;
+text-decoration:none
+}
+
+.image-generating{
+max-width:520px;
+min-height:180px;
+border:1px solid var(--border);
+border-radius:15px;
+background:#171a1d;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+gap:12px;
+color:var(--muted);
+margin-top:8px
+}
+
+.spinner{
+width:29px;
+height:29px;
+border:3px solid #383d42;
+border-top-color:#fff;
+border-radius:50%;
+animation:spin .8s linear infinite
+}
+
 @keyframes spin{to{transform:rotate(360deg)}}
-.input-container{width:100%;max-width:900px;padding:12px 24px 22px;margin:0 auto}
-.input-box{position:relative;border:1px solid #34393e;background:#171a1d;border-radius:28px;padding:14px 15px 12px;box-shadow:0 10px 35px #0008}
-#prompt{width:100%;border:0;outline:0;resize:none;min-height:34px;max-height:150px;background:transparent;color:#fff;font-size:15px;line-height:1.5;padding:2px 5px}
+
+.input-container{
+width:100%;
+max-width:900px;
+padding:12px 24px 22px;
+margin:0 auto
+}
+
+.input-box{
+position:relative;
+border:1px solid #34393e;
+background:#171a1d;
+border-radius:28px;
+padding:14px 15px 12px;
+box-shadow:0 10px 35px #0008
+}
+
+#prompt{
+width:100%;
+border:0;
+outline:0;
+resize:none;
+min-height:34px;
+max-height:150px;
+background:transparent;
+color:#fff;
+font-size:15px;
+line-height:1.5;
+padding:2px 5px
+}
+
 #prompt::placeholder{color:#969ba0}
-.input-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px}
-.input-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.tool-pill{height:39px;min-width:42px;padding:0 13px;border:1px solid #383e44;border-radius:22px;background:#22272b;color:#f4f5f6;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13px;transition:.2s}
-.tool-pill:hover,.tool-pill.active{background:#343b42;border-color:#6b747d}
+
+.input-bottom{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+margin-top:9px
+}
+
+.input-tools{
+display:flex;
+align-items:center;
+gap:9px;
+flex-wrap:wrap
+}
+
+.tool-pill{
+height:39px;
+min-width:42px;
+padding:0 13px;
+border:1px solid #383e44;
+border-radius:22px;
+background:#22272b;
+color:#f4f5f6;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+font-size:13px;
+transition:.2s
+}
+
+.tool-pill:hover,.tool-pill.active{
+background:#343b42;
+border-color:#6b747d
+}
+
 .tool-pill .tool-symbol{font-size:17px}
-.send-button{width:40px;height:40px;flex-shrink:0;border-radius:50%;border:0;background:#fff;color:#111;font-size:20px;font-weight:bold}
+
+.send-button{
+width:40px;
+height:40px;
+flex-shrink:0;
+border-radius:50%;
+border:0;
+background:#fff;
+color:#111;
+font-size:20px;
+font-weight:bold
+}
+
 .send-button:disabled,.tool-pill:disabled{opacity:.4;cursor:not-allowed}
-.disclaimer{color:#858b91;text-align:center;font-size:10px;margin-top:10px}
+
+.disclaimer{
+color:#858b91;
+text-align:center;
+font-size:10px;
+margin-top:10px
+}
+
 #fileInput,#cameraInput{display:none}
-.attachment-preview{display:none;align-items:center;gap:10px;padding:8px 10px;margin:4px 3px 10px;border-radius:12px;background:#252a2f}
-.attachment-preview img{width:48px;height:48px;object-fit:cover;border-radius:8px}
-.attachment-preview span{font-size:12px;color:#dce0e3;flex:1;overflow:hidden;text-overflow:ellipsis}
+
+.attachment-preview{
+display:none;
+align-items:center;
+gap:10px;
+padding:8px 10px;
+margin:4px 3px 10px;
+border-radius:12px;
+background:#252a2f
+}
+
+.attachment-preview img{
+width:48px;
+height:48px;
+object-fit:cover;
+border-radius:8px
+}
+
+.attachment-preview span{
+font-size:12px;
+color:#dce0e3;
+flex:1;
+overflow:hidden;
+text-overflow:ellipsis
+}
+
 .remove-attachment{border:0;background:transparent;color:#fff;font-size:18px}
-.emoji-panel{display:none;position:absolute;bottom:73px;left:15px;width:min(310px,calc(100vw - 40px));padding:12px;background:#24292e;border:1px solid #41474d;border-radius:15px;box-shadow:0 12px 35px #0009;z-index:20}
+
+.emoji-panel{
+display:none;
+position:absolute;
+bottom:73px;
+left:15px;
+width:min(310px,calc(100vw - 40px));
+padding:12px;
+background:#24292e;
+border:1px solid #41474d;
+border-radius:15px;
+box-shadow:0 12px 35px #0009;
+z-index:20
+}
+
 .emoji-panel.open{display:block}
+
 .emoji-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.emoji-grid button{border:0;background:transparent;border-radius:8px;padding:7px;font-size:22px}
+
+.emoji-grid button{
+border:0;
+background:transparent;
+border-radius:8px;
+padding:7px;
+font-size:22px
+}
+
 .emoji-grid button:hover{background:#3b4249}
+
 .page-panel{width:100%;max-width:750px;margin:0 auto;padding:35px 25px}
+
 .page-panel h1{font-size:25px;margin-bottom:10px}
+
 .page-description{color:var(--muted);font-size:13px;margin-bottom:30px}
-.setting-card{padding:20px;border:1px solid var(--border);border-radius:13px;margin-bottom:15px;background:var(--panel)}
-.setting-card h3{font-size:14px;margin-bottom:8px}.setting-card p{color:var(--muted);font-size:12px;margin-bottom:15px}
-.setting-select{padding:11px;width:100%;border-radius:9px;border:1px solid var(--border);background:#202326;color:#fff;outline:none}
-.action-button{padding:10px 15px;border:1px solid var(--border);border-radius:9px;background:#202326;color:#fff}
+
+.setting-card{
+padding:20px;
+border:1px solid var(--border);
+border-radius:13px;
+margin-bottom:15px;
+background:var(--panel)
+}
+
+.setting-card h3{font-size:14px;margin-bottom:8px}
+
+.setting-card p{color:var(--muted);font-size:12px;margin-bottom:15px}
+
+.setting-select{
+padding:11px;
+width:100%;
+border-radius:9px;
+border:1px solid var(--border);
+background:#202326;
+color:#fff;
+outline:none
+}
+
+.action-button{
+padding:10px 15px;
+border:1px solid var(--border);
+border-radius:9px;
+background:#202326;
+color:#fff
+}
+
+/* MOBILE SIDEBAR FIX */
 @media(max-width:700px){
-.sidebar{position:fixed;left:0;top:0;bottom:0;box-shadow:5px 0 25px #0008}
-.sidebar.hidden{margin-left:-264px}.topbar{padding:0 12px}
-.chat-area{padding:22px 14px}.input-container{padding:10px 10px 15px}
-.welcome{margin-top:65px}.welcome h1{font-size:25px}
-.provider-label{font-size:10px}.tool-pill{height:37px;min-width:39px;padding:0 10px;font-size:12px}
-.input-box{padding:12px;border-radius:24px}.message-text{padding:11px 13px}
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+bottom:0;
+width:264px;
+min-width:264px;
+height:100vh;
+height:100dvh;
+z-index:1001;
+box-shadow:5px 0 25px #0008;
+transform:translateX(-100%);
+visibility:hidden;
+margin-left:0 !important;
+transition:transform .25s ease,visibility .25s ease
+}
+
+/* Open sidebar */
+.sidebar:not(.hidden){
+transform:translateX(0);
+visibility:visible
+}
+
+/* Closed sidebar */
+.sidebar.hidden{
+transform:translateX(-100%);
+visibility:hidden;
+margin-left:0 !important
+}
+
+.main{
+width:100%;
+min-width:0;
+margin-left:0
+}
+
+.topbar{padding:0 12px}
+
+.chat-area{padding:22px 14px}
+
+.input-container{padding:10px 10px 15px}
+
+.welcome{margin-top:65px}
+
+.welcome h1{font-size:25px}
+
+.provider-label{font-size:10px}
+
+.tool-pill{
+height:37px;
+min-width:39px;
+padding:0 10px;
+font-size:12px
+}
+
+.input-box{padding:12px;border-radius:24px}
+
+.message-text{padding:11px 13px}
 }
 </style>
 </head>
+
 <body>
+
 <div class="app">
-<aside class="sidebar" id="sidebar">
- <div class="sidebar-top">
-  <div class="brand"><img src="applogo.jpg" alt="NovaAI logo"><span>NovaAI</span></div>
-  <button class="new-chat" onclick="newChat()">＋ &nbsp; New Chat</button>
- </div>
- <div class="sidebar-scroll">
-  <div class="section-label">WORKSPACE</div>
-  <button class="nav-button active" data-page="chats" onclick="openPage('chats',this)"><span class="nav-icon">◈</span> Chats</button>
-  <button class="nav-button" onclick="window.location.href='codex.html'"><span class="nav-icon">⌘</span> Codex</button>
-  <button class="nav-button" data-page="chess" onclick="openPage('chess',this)"><span class="nav-icon">♟</span> Chess</button>
-  <button class="nav-button" data-page="settings" onclick="openPage('settings',this)"><span class="nav-icon">⚙</span> Settings</button>
-  <div class="section-label" style="margin-top:20px">RECENT CHATS</div>
-  <div id="historyList"></div>
- </div>
- <div class="sidebar-bottom">
-  <div class="profile">
-   <div class="avatar" id="userAvatar">N</div>
-   <div class="profile-info"><div class="profile-name" id="userName">Loading...</div><div class="profile-email" id="userEmail">Please wait</div></div>
-   <button class="signout" onclick="signOut()" title="Sign out">↪</button>
-  </div>
- </div>
+
+<aside class="sidebar hidden" id="sidebar">
+
+<div class="sidebar-top">
+<div class="brand">
+<img src="applogo.jpg" alt="NovaAI logo">
+<span>NovaAI</span>
+</div>
+
+<button class="new-chat" onclick="newChat()">＋ &nbsp; New Chat</button>
+</div>
+
+<div class="sidebar-scroll">
+
+<div class="section-label">WORKSPACE</div>
+
+<button class="nav-button active" data-page="chats" onclick="openPage('chats',this)">
+<span class="nav-icon">◈</span> Chats
+</button>
+
+<button class="nav-button" onclick="window.location.href='codex.html'">
+<span class="nav-icon">⌘</span> Codex
+</button>
+
+<button class="nav-button" data-page="chess" onclick="openPage('chess',this)">
+<span class="nav-icon">♟</span> Chess
+</button>
+
+<button class="nav-button" data-page="settings" onclick="openPage('settings',this)">
+<span class="nav-icon">⚙</span> Settings
+</button>
+
+<div class="section-label" style="margin-top:20px">RECENT CHATS</div>
+<div id="historyList"></div>
+
+</div>
+
+<div class="sidebar-bottom">
+<div class="profile">
+
+<div class="avatar" id="userAvatar">N</div>
+
+<div class="profile-info">
+<div class="profile-name" id="userName">Loading...</div>
+<div class="profile-email" id="userEmail">Please wait</div>
+</div>
+
+<button class="signout" onclick="signOut()" title="Sign out">↪</button>
+
+</div>
+</div>
+
 </aside>
 
 <main class="main">
- <header class="topbar">
-  <button class="icon-button" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
-  <div class="top-title" id="topTitle">NovaAI</div>
-  <div class="provider-label" id="providerLabel">Groq AI</div>
- </header>
 
- <div class="content" id="content">
-  <section id="chatPage" class="chat-page">
-   <div class="chat-area">
-    <div class="welcome" id="welcome">
-     <img src="applogo.jpg" alt="NovaAI">
-     <h1>What can I help with?</h1>
-     <p>Ask anything. Let's make something amazing.</p>
-    </div>
-    <div class="messages" id="messages"></div>
-   </div>
+<header class="topbar">
+<button class="icon-button" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+<div class="top-title" id="topTitle">NovaAI</div>
+<div class="provider-label" id="providerLabel">Groq AI</div>
+</header>
 
-   <div class="input-container">
-    <div class="input-box">
-     <div class="emoji-panel" id="emojiPanel"><div class="emoji-grid" id="emojiGrid"></div></div>
-     <div class="attachment-preview" id="attachmentPreview">
-      <img id="attachmentThumb" alt="Selected photo">
-      <span id="attachmentName"></span>
-      <button class="remove-attachment" onclick="removeAttachment()" title="Remove">×</button>
-     </div>
-     <textarea id="prompt" rows="1" placeholder="Message NovaAI..."></textarea>
-     <div class="input-bottom">
-      <div class="input-tools">
-       <button class="tool-pill" onclick="document.getElementById('cameraInput').click()" title="Take a photo"><span class="tool-symbol">◎</span><span>Camera</span></button>
-       <button class="tool-pill" onclick="document.getElementById('fileInput').click()" title="Upload from album"><span class="tool-symbol">＋</span><span>Photo</span></button>
-       <button class="tool-pill" id="stickerButton" onclick="toggleStickers()" title="Stickers"><span class="tool-symbol">☺</span><span>Sticker</span></button>
-       <button class="tool-pill" onclick="window.location.href='liveai.html'" title="Open LiveAI"><span class="tool-symbol">◉</span><span>LiveAI</span></button>
-      </div>
-      <button class="send-button" id="sendButton" onclick="sendMessage()" title="Send">↑</button>
-     </div>
-     <input id="cameraInput" type="file" accept="image/*" capture="environment">
-     <input id="fileInput" type="file" accept="image/*">
-    </div>
-    <div class="disclaimer" id="disclaimer">NovaAI can make mistakes. Check important information.</div>
-   </div>
-  </section>
+<div class="content" id="content">
 
-  <section id="chessPage" style="display:none">
-   <div class="page-panel"><h1>Chess</h1><p class="page-description">Your chess workspace.</p>
-    <div class="setting-card"><h3>Chess workspace</h3><p>This page is ready for your chess game feature.</p></div>
-   </div>
-  </section>
+<section id="chatPage" class="chat-page">
 
-  <section id="settingsPage" style="display:none">
-   <div class="page-panel"><h1>Settings</h1><p class="page-description">Manage your NovaAI experience.</p>
-    <div class="setting-card"><h3>AI Model</h3><p>Select which AI provider NovaAI should use.</p>
-     <select class="setting-select" id="providerSelect" onchange="changeProvider()"><option value="groq">Groq AI</option><option value="gemini">Google Gemini</option></select>
-    </div>
-    <div class="setting-card"><h3>Appearance</h3><p>Choose between light and dark mode.</p>
-     <select class="setting-select" id="themeSelect" onchange="changeTheme()"><option value="dark">Dark mode</option><option value="light">Light mode</option></select>
-    </div>
-    <div class="setting-card"><h3>Account</h3><p id="settingsEmail">Loading account...</p><button class="action-button" onclick="signOut()">Sign out</button></div>
-   </div>
-  </section>
- </div>
+<div class="chat-area">
+
+<div class="welcome" id="welcome">
+<img src="applogo.jpg" alt="NovaAI">
+<h1>What can I help with?</h1>
+<p>Ask anything. Let's make something amazing.</p>
+</div>
+
+<div class="messages" id="messages"></div>
+
+</div>
+
+<div class="input-container">
+
+<div class="input-box">
+
+<div class="emoji-panel" id="emojiPanel">
+<div class="emoji-grid" id="emojiGrid"></div>
+</div>
+
+<div class="attachment-preview" id="attachmentPreview">
+<img id="attachmentThumb" alt="Selected photo">
+<span id="attachmentName"></span>
+<button class="remove-attachment" onclick="removeAttachment()" title="Remove">×</button>
+</div>
+
+<textarea id="prompt" rows="1" placeholder="Message NovaAI..."></textarea>
+
+<div class="input-bottom">
+
+<div class="input-tools">
+
+<button class="tool-pill" onclick="document.getElementById('cameraInput').click()" title="Take a photo">
+<span class="tool-symbol">◎</span><span>Camera</span>
+</button>
+
+<button class="tool-pill" onclick="document.getElementById('fileInput').click()" title="Upload from album">
+<span class="tool-symbol">＋</span><span>Photo</span>
+</button>
+
+<button class="tool-pill" id="stickerButton" onclick="toggleStickers()" title="Stickers">
+<span class="tool-symbol">☺</span><span>Sticker</span>
+</button>
+
+<button class="tool-pill" onclick="window.location.href='liveai.html'" title="Open LiveAI">
+<span class="tool-symbol">◉</span><span>LiveAI</span>
+</button>
+
+</div>
+
+<button class="send-button" id="sendButton" onclick="sendMessage()" title="Send">↑</button>
+
+</div>
+
+<input id="cameraInput" type="file" accept="image/*" capture="environment">
+<input id="fileInput" type="file" accept="image/*">
+
+</div>
+
+<div class="disclaimer" id="disclaimer">
+NovaAI can make mistakes. Check important information.
+</div>
+
+</div>
+
+</section>
+
+<section id="chessPage" style="display:none">
+<div class="page-panel">
+<h1>Chess</h1>
+<p class="page-description">Your chess workspace.</p>
+<div class="setting-card">
+<h3>Chess workspace</h3>
+<p>This page is ready for your chess game feature.</p>
+</div>
+</div>
+</section>
+
+<section id="settingsPage" style="display:none">
+<div class="page-panel">
+
+<h1>Settings</h1>
+<p class="page-description">Manage your NovaAI experience.</p>
+
+<div class="setting-card">
+<h3>AI Model</h3>
+<p>Select which AI provider NovaAI should use.</p>
+<select class="setting-select" id="providerSelect" onchange="changeProvider()">
+<option value="groq">Groq AI</option>
+<option value="gemini">Google Gemini</option>
+</select>
+</div>
+
+<div class="setting-card">
+<h3>Appearance</h3>
+<p>Choose between light and dark mode.</p>
+<select class="setting-select" id="themeSelect" onchange="changeTheme()">
+<option value="dark">Dark mode</option>
+<option value="light">Light mode</option>
+</select>
+</div>
+
+<div class="setting-card">
+<h3>Account</h3>
+<p id="settingsEmail">Loading account...</p>
+<button class="action-button" onclick="signOut()">Sign out</button>
+</div>
+
+</div>
+</section>
+
+</div>
 </main>
 </div>
 
 <script>
+
 const SUPABASE_URL="https://lcitadmsgfwxemvcyaex.supabase.co";
 const SUPABASE_KEY="sb_publishable_0J0LMASleqkhThJP4dT8Kg_NaL3RL06";
+
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser=null;
@@ -216,175 +852,886 @@ let isGenerating=false;
 let selectedPhoto=null;
 let chatHistory=JSON.parse(localStorage.getItem("novaai_chats")||"[]");
 
+/* INITIALIZE APP */
+
 async function initializeApp(){
+
+ const sidebar=document.getElementById("sidebar");
+
+ // Mobile sidebar is hidden from the beginning.
+ if(window.innerWidth<=700){
+  sidebar.classList.add("hidden");
+ }
+
  const {data,error}=await supabaseClient.auth.getSession();
- if(error||!data.session){window.location.replace("login.html");return;}
+
+ if(error||!data.session){
+  window.location.replace("login.html");
+  return;
+ }
+
  currentUser=data.session.user;
+
  const meta=currentUser.user_metadata||{};
+
  const name=meta.full_name||meta.name||meta.user_name||(currentUser.email||"NovaAI").split("@")[0];
+
  document.getElementById("userName").textContent=name;
  document.getElementById("userEmail").textContent=currentUser.email||"";
  document.getElementById("userAvatar").textContent=name.charAt(0).toUpperCase();
  document.getElementById("settingsEmail").textContent=currentUser.email||"";
+
  document.getElementById("providerSelect").value=currentProvider;
+
  document.getElementById("themeSelect").value=localStorage.getItem("novaai_theme")||"dark";
- changeTheme(false);updateProviderLabel();renderHistory();
- supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"||!session)window.location.replace("login.html");});
-}
-async function signOut(){const {error}=await supabaseClient.auth.signOut();if(error){alert("Sign out failed: "+error.message);return;}window.location.replace("login.html");}
-function toggleSidebar(){document.getElementById("sidebar").classList.toggle("hidden");}
-function openPage(page,button){
- const ids={chats:"chatPage",chess:"chessPage",settings:"settingsPage"};
- Object.values(ids).forEach(id=>document.getElementById(id).style.display="none");
- document.getElementById(ids[page]).style.display=page==="chats"?"flex":"block";
- document.querySelectorAll(".nav-button").forEach(b=>b.classList.remove("active"));
- if(button)button.classList.add("active");
- document.getElementById("topTitle").textContent={chats:"NovaAI",chess:"Chess",settings:"Settings"}[page]||"NovaAI";
- if(innerWidth<=700)document.getElementById("sidebar").classList.add("hidden");
-}
-function changeProvider(){currentProvider=document.getElementById("providerSelect").value;localStorage.setItem("novaai_provider",currentProvider);updateProviderLabel();}
-function updateProviderLabel(){document.getElementById("providerLabel").textContent=currentProvider==="gemini"?"Gemini AI":"Groq AI";}
-function changeTheme(save=true){const theme=document.getElementById("themeSelect").value;document.body.classList.toggle("light",theme==="light");if(save)localStorage.setItem("novaai_theme",theme);}
-function newChat(){currentChatId=null;chatMessages=[];document.getElementById("messages").innerHTML="";document.getElementById("welcome").style.display="block";removeAttachment();document.getElementById("prompt").value="";openPage("chats",document.querySelector('[data-page="chats"]'));document.getElementById("prompt").focus();renderHistory();}
-function saveCurrentChat(){
- if(!chatMessages.length)return;
- if(!currentChatId){currentChatId=Date.now().toString();chatHistory.unshift({id:currentChatId,title:(chatMessages.find(m=>m.role==="user")?.content||"New Chat").slice(0,45),messages:[...chatMessages],updated:Date.now()});}
- else{const c=chatHistory.find(x=>x.id===currentChatId);if(c){c.messages=[...chatMessages];c.updated=Date.now();}}
- try{localStorage.setItem("novaai_chats",JSON.stringify(chatHistory));}catch(e){console.warn("Chat history storage is full",e);alert("This chat is too large to save in browser history. The current conversation is still visible.");}
+
+ changeTheme(false);
+ updateProviderLabel();
  renderHistory();
-}
-function renderHistory(){const box=document.getElementById("historyList");box.innerHTML="";chatHistory.forEach(chat=>{const item=document.createElement("div");item.className="history-item";item.textContent=chat.title;item.title=chat.title;item.onclick=()=>loadChat(chat.id);box.appendChild(item);});}
-function loadChat(id){
- const chat=chatHistory.find(c=>c.id===id);if(!chat)return;
- currentChatId=id;chatMessages=[...chat.messages];document.getElementById("messages").innerHTML="";document.getElementById("welcome").style.display="none";
- chatMessages.forEach(m=>{if(m.type==="image"&&m.imageUrl)addImageMessage(m.prompt||m.content,m.imageUrl,false);else if(m.type==="upload"&&m.imageUrl)addUploadedPhoto(m.imageUrl,m.fileName,false);else addMessage(m.role,m.content,false);});
- openPage("chats",document.querySelector('[data-page="chats"]'));scrollToBottom();
-}
-function scrollToBottom(){requestAnimationFrame(()=>{const c=document.getElementById("content");c.scrollTop=c.scrollHeight;});}
-function addMessage(role,content,animate=false){
- document.getElementById("welcome").style.display="none";
- const w=document.createElement("div");w.className="message "+(role==="user"?"user":"assistant");
- const av=document.createElement("div");av.className="message-avatar";av.textContent=role==="user"?"Y":"N";
- const b=document.createElement("div");b.className="message-body";
- const r=document.createElement("div");r.className="message-role";r.textContent=role==="user"?"You":"NovaAI";
- const t=document.createElement("div");t.className="message-text";b.append(r,t);w.append(av,b);document.getElementById("messages").appendChild(w);
- if(animate)typeText(t,content);else t.textContent=content;scrollToBottom();return t;
-}
-function typeText(el,text){const parts=text.split(/(\s+)/);let i=0;function step(){if(i>=parts.length)return;el.textContent+=parts[i++];scrollToBottom();setTimeout(step,18);}step();}
-function addImageMessage(promptText,url){
- document.getElementById("welcome").style.display="none";
- const w=document.createElement("div");w.className="message assistant";
- const av=document.createElement("div");av.className="message-avatar";av.textContent="N";
- const b=document.createElement("div");b.className="message-body";
- const r=document.createElement("div");r.className="message-role";r.textContent="NovaAI · Generated image";
- const d=document.createElement("div");d.textContent="Created from: "+promptText;
- const im=document.createElement("img");im.className="message-image";im.src=url;im.alt=promptText;im.loading="lazy";
- const actions=document.createElement("div");actions.className="image-actions";
- const open=document.createElement("a");open.className="image-action";open.href=url;open.target="_blank";open.rel="noopener noreferrer";open.textContent="↗ Open image";
- const save=document.createElement("a");save.className="image-action";save.href=url;save.target="_blank";save.rel="noopener noreferrer";save.download="novaai-image";save.textContent="↓ Save image";
- actions.append(open,save);b.append(r,d,im,actions);w.append(av,b);document.getElementById("messages").appendChild(w);scrollToBottom();
-}
-function addUploadedPhoto(url,fileName,store=true){
- document.getElementById("welcome").style.display="none";
- const w=document.createElement("div");w.className="message user";
- const av=document.createElement("div");av.className="message-avatar";av.textContent="Y";
- const b=document.createElement("div");b.className="message-body";
- const r=document.createElement("div");r.className="message-role";r.textContent="You · Attached photo";
- const im=document.createElement("img");im.className="message-image";im.src=url;im.alt=fileName||"Uploaded photo";
- const a=document.createElement("a");a.className="image-action";a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="↗ Open photo";
- b.append(r,im,a);w.append(av,b);document.getElementById("messages").appendChild(w);scrollToBottom();
-}
-function showThinking(id="thinkingMessage",label="Thinking..."){
- document.getElementById("welcome").style.display="none";
- const w=document.createElement("div");w.className="message assistant";w.id=id;
- w.innerHTML='<div class="message-avatar">N</div><div class="message-body"><div class="message-role">NovaAI</div><div class="thinking">'+label+'</div></div>';
- document.getElementById("messages").appendChild(w);scrollToBottom();
-}
-function removeThinking(id="thinkingMessage"){document.getElementById(id)?.remove();}
 
-// Image generation is called ONLY when the prompt begins with "Generate an image".
-function isImageGenerationPrompt(text){return /^generate\s+an?\s+image\b/i.test(text.trim());}
-async function generateImage(promptText){
- const {data,error}=await supabaseClient.functions.invoke("image-generate",{body:{prompt:promptText}});
+ supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"||!session){
+   window.location.replace("login.html");
+  }
+ });
+
+}
+
+/* AUTH */
+
+async function signOut(){
+
+ const {error}=await supabaseClient.auth.signOut();
+
  if(error){
-  let message=error.message||"Image generation request failed.";
-  try{if(error.context&&typeof error.context.json==="function"){const e=await error.context.json();message=e.error||e.message||message;}}catch(_){}
-  throw new Error(message);
+  alert("Sign out failed: "+error.message);
+  return;
  }
- if(!data||data.success!==true||!data.imageUrl)throw new Error(data?.error||"Image generator returned an invalid response.");
- return data;
-}
-async function sendImageRequest(text){
- isGenerating=true;setControlsDisabled(true);chatMessages.push({role:"user",content:text});addMessage("user",text);showThinking("imageThinking","Creating your image...");
- try{
-  const result=await generateImage(text);removeThinking("imageThinking");
-  chatMessages.push({role:"assistant",content:"Generated image for: "+text,type:"image",prompt:text,imageUrl:result.imageUrl,fileName:result.fileName||null,model:result.model||null});
-  addImageMessage(text,result.imageUrl);saveCurrentChat();
- }catch(e){removeThinking("imageThinking");addMessage("assistant","I couldn't generate that image.\n\n"+(e.message||"Please try again."));console.error("image-generate error",e);}
- finally{isGenerating=false;setControlsDisabled(false);document.getElementById("prompt").focus();}
-}
-async function sendChatMessage(text){
- isGenerating=true;setControlsDisabled(true);chatMessages.push({role:"user",content:text});addMessage("user",text);showThinking();
- try{
-  const messages=chatMessages.filter(m=>m.role==="user"||m.role==="assistant").map(m=>({role:m.role,content:m.content}));
-  const {data,error}=await supabaseClient.functions.invoke("ai-chat",{body:{provider:currentProvider,messages:[{role:"system",content:"You are NovaAI, a helpful, intelligent AI assistant. Give clear, accurate and useful answers. Format code and explanations clearly."},...messages]}});
-  if(error){let msg=error.message||"Edge Function request failed.";try{if(error.context&&typeof error.context.json==="function"){const e=await error.context.json();msg=e.error||msg;}}catch(_){}throw new Error(msg);}
-  if(!data||data.success!==true||!data.answer)throw new Error(data?.error||"The AI returned an invalid response.");
-  removeThinking();chatMessages.push({role:"assistant",content:data.answer});addMessage("assistant",data.answer,true);saveCurrentChat();
- }catch(e){removeThinking();addMessage("assistant","Sorry, I couldn't get a response.\n\nError: "+(e.message||"Something went wrong."));console.error("ai-chat error",e);}
- finally{isGenerating=false;setControlsDisabled(false);document.getElementById("prompt").focus();}
-}
-function setControlsDisabled(disabled){document.getElementById("sendButton").disabled=disabled;document.getElementById("prompt").disabled=disabled;document.querySelectorAll(".tool-pill").forEach(b=>b.disabled=disabled);}
-async function sendMessage(){
- const input=document.getElementById("prompt");const text=input.value.trim();if((!text&&!selectedPhoto)||isGenerating)return;
- input.value="";input.style.height="auto";
- if(selectedPhoto){await uploadSelectedPhoto();if(!text)return;}
- if(isImageGenerationPrompt(text))await sendImageRequest(text);else if(text)await sendChatMessage(text);
+
+ window.location.replace("login.html");
 }
 
-// Camera capture and album photo selection.
-function handlePhotoSelection(file){
- if(!file)return;
- if(!file.type.startsWith("image/")){alert("Please select an image file.");return;}
- if(file.size>15*1024*1024){alert("Please choose an image smaller than 15 MB.");return;}
- selectedPhoto=file;
- document.getElementById("attachmentThumb").src=URL.createObjectURL(file);
- document.getElementById("attachmentName").textContent=file.name;
- document.getElementById("attachmentPreview").style.display="flex";
+/* SIDEBAR */
+
+function toggleSidebar(){
+
+ const sidebar=document.getElementById("sidebar");
+
+ sidebar.classList.toggle("hidden");
+
 }
-document.getElementById("cameraInput").addEventListener("change",e=>{handlePhotoSelection(e.target.files[0]);e.target.value="";});
-document.getElementById("fileInput").addEventListener("change",e=>{handlePhotoSelection(e.target.files[0]);e.target.value="";});
-function removeAttachment(){selectedPhoto=null;document.getElementById("attachmentPreview").style.display="none";document.getElementById("attachmentThumb").removeAttribute("src");}
-async function uploadSelectedPhoto(){
- if(!selectedPhoto)return;
- const file=selectedPhoto;selectedPhoto=null;document.getElementById("attachmentPreview").style.display="none";
- const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
- const path=`${currentUser.id}/uploads/${crypto.randomUUID()}.${ext}`;
- showThinking("uploadThinking","Uploading your photo...");
- try{
-  const {error}=await supabaseClient.storage.from("generated-images").upload(path,file,{contentType:file.type,upsert:false,cacheControl:"3600"});
-  if(error)throw error;
-  const {data}=supabaseClient.storage.from("generated-images").getPublicUrl(path);
-  if(!data?.publicUrl)throw new Error("Could not get the uploaded photo URL.");
-  removeThinking("uploadThinking");
-  chatMessages.push({role:"user",content:"Uploaded photo: "+file.name,type:"upload",imageUrl:data.publicUrl,fileName:file.name});
-  addUploadedPhoto(data.publicUrl,file.name);saveCurrentChat();
- }catch(e){
-  removeThinking("uploadThinking");selectedPhoto=file;
-  document.getElementById("attachmentName").textContent=file.name;
-  document.getElementById("attachmentPreview").style.display="flex";
-  alert("Photo upload failed: "+(e.message||"Check that the generated-images bucket exists and allows uploads."));
+
+/* PAGE NAVIGATION */
+
+function openPage(page,button){
+
+ const ids={
+  chats:"chatPage",
+  chess:"chessPage",
+  settings:"settingsPage"
+ };
+
+ Object.values(ids).forEach(id=>{
+  document.getElementById(id).style.display="none";
+ });
+
+ document.getElementById(ids[page]).style.display=page==="chats"?"flex":"block";
+
+ document.querySelectorAll(".nav-button").forEach(b=>{
+  b.classList.remove("active");
+ });
+
+ if(button)button.classList.add("active");
+
+ document.getElementById("topTitle").textContent={
+  chats:"NovaAI",
+  chess:"Chess",
+  settings:"Settings"
+ }[page]||"NovaAI";
+
+ // Automatically close mobile sidebar after navigation.
+ if(window.innerWidth<=700){
+  document.getElementById("sidebar").classList.add("hidden");
  }
+
 }
-const emojis=["😀","😃","😄","😁","😂","🥹","😊","😍","🥰","😘","😎","🤔","🤩","🥳","😭","😴","🙏","👏","👍","👎","❤️","💚","🔥","✨","🎉","🚀","🌟","💯","🙌","🤝","😇","🤗","💡","🎨","🐱","🐶","🌈","☀️","🌙","🍀","⚡","🎯"];
-document.getElementById("emojiGrid").innerHTML=emojis.map(e=>`<button type="button" onclick="insertSticker('${e}')">${e}</button>`).join("");
-function toggleStickers(){document.getElementById("emojiPanel").classList.toggle("open");}
-function insertSticker(emoji){const input=document.getElementById("prompt");input.value+=emoji;input.focus();document.getElementById("emojiPanel").classList.remove("open");}
-document.addEventListener("click",e=>{const panel=document.getElementById("emojiPanel");if(!panel.contains(e.target)&&!e.target.closest("#stickerButton"))panel.classList.remove("open");});
+
+/* SETTINGS */
+
+function changeProvider(){
+
+ currentProvider=document.getElementById("providerSelect").value;
+
+ localStorage.setItem("novaai_provider",currentProvider);
+
+ updateProviderLabel();
+
+}
+
+function updateProviderLabel(){
+
+ document.getElementById("providerLabel").textContent=
+ currentProvider==="gemini"?"Gemini AI":"Groq AI";
+
+}
+
+function changeTheme(save=true){
+
+ const theme=document.getElementById("themeSelect").value;
+
+ document.body.classList.toggle("light",theme==="light");
+
+ if(save)localStorage.setItem("novaai_theme",theme);
+
+}
+
+/* CHAT HISTORY */
+
+function newChat(){
+
+ currentChatId=null;
+ chatMessages=[];
+
+ document.getElementById("messages").innerHTML="";
+ document.getElementById("welcome").style.display="block";
+
+ removeAttachment();
+
+ document.getElementById("prompt").value="";
+
+ openPage("chats",document.querySelector('[data-page="chats"]'));
+
+ document.getElementById("prompt").focus();
+
+ renderHistory();
+
+}
+
+function saveCurrentChat(){
+
+ if(!chatMessages.length)return;
+
+ if(!currentChatId){
+
+  currentChatId=Date.now().toString();
+
+  chatHistory.unshift({
+   id:currentChatId,
+   title:(chatMessages.find(m=>m.role==="user")?.content||"New Chat").slice(0,45),
+   messages:[...chatMessages],
+   updated:Date.now()
+  });
+
+ }else{
+
+  const c=chatHistory.find(x=>x.id===currentChatId);
+
+  if(c){
+   c.messages=[...chatMessages];
+   c.updated=Date.now();
+  }
+
+ }
+
+ try{
+
+  localStorage.setItem("novaai_chats",JSON.stringify(chatHistory));
+
+ }catch(e){
+
+  console.warn("Chat history storage is full",e);
+
+  alert("This chat is too large to save in browser history. The current conversation is still visible.");
+
+ }
+
+ renderHistory();
+
+}
+
+function renderHistory(){
+
+ const box=document.getElementById("historyList");
+
+ box.innerHTML="";
+
+ chatHistory.forEach(chat=>{
+
+  const item=document.createElement("div");
+
+  item.className="history-item";
+  item.textContent=chat.title;
+  item.title=chat.title;
+  item.onclick=()=>loadChat(chat.id);
+
+  box.appendChild(item);
+
+ });
+
+}
+
+function loadChat(id){
+
+ const chat=chatHistory.find(c=>c.id===id);
+
+ if(!chat)return;
+
+ currentChatId=id;
+ chatMessages=[...chat.messages];
+
+ document.getElementById("messages").innerHTML="";
+ document.getElementById("welcome").style.display="none";
+
+ chatMessages.forEach(m=>{
+
+  if(m.type==="image"&&m.imageUrl){
+   addImageMessage(m.prompt||m.content,m.imageUrl,false);
+  }
+  else if(m.type==="upload"&&m.imageUrl){
+   addUploadedPhoto(m.imageUrl,m.fileName,false);
+  }
+  else{
+   addMessage(m.role,m.content,false);
+  }
+
+ });
+
+ openPage("chats",document.querySelector('[data-page="chats"]'));
+
+ scrollToBottom();
+
+}
+
+/* MESSAGES */
+
+function scrollToBottom(){
+
+ requestAnimationFrame(()=>{
+  const c=document.getElementById("content");
+  c.scrollTop=c.scrollHeight;
+ });
+
+}
+
+function addMessage(role,content,animate=false){
+
+ document.getElementById("welcome").style.display="none";
+
+ const w=document.createElement("div");
+ w.className="message "+(role==="user"?"user":"assistant");
+
+ const av=document.createElement("div");
+ av.className="message-avatar";
+ av.textContent=role==="user"?"Y":"N";
+
+ const b=document.createElement("div");
+ b.className="message-body";
+
+ const r=document.createElement("div");
+ r.className="message-role";
+ r.textContent=role==="user"?"You":"NovaAI";
+
+ const t=document.createElement("div");
+ t.className="message-text";
+
+ b.append(r,t);
+ w.append(av,b);
+
+ document.getElementById("messages").appendChild(w);
+
+ if(animate)typeText(t,content);
+ else t.textContent=content;
+
+ scrollToBottom();
+
+ return t;
+
+}
+
+function typeText(el,text){
+
+ const parts=text.split(/(\s+)/);
+
+ let i=0;
+
+ function step(){
+
+  if(i>=parts.length)return;
+
+  el.textContent+=parts[i++];
+
+  scrollToBottom();
+
+  setTimeout(step,18);
+
+ }
+
+ step();
+
+}
+
+/* GENERATED IMAGE DISPLAY */
+
+function addImageMessage(promptText,url){
+
+ document.getElementById("welcome").style.display="none";
+
+ const w=document.createElement("div");
+ w.className="message assistant";
+
+ const av=document.createElement("div");
+ av.className="message-avatar";
+ av.textContent="N";
+
+ const b=document.createElement("div");
+ b.className="message-body";
+
+ const r=document.createElement("div");
+ r.className="message-role";
+ r.textContent="NovaAI · Generated image";
+
+ const d=document.createElement("div");
+ d.textContent="Created from: "+promptText;
+
+ const im=document.createElement("img");
+ im.className="message-image";
+ im.src=url;
+ im.alt=promptText;
+ im.loading="lazy";
+
+ const actions=document.createElement("div");
+ actions.className="image-actions";
+
+ const open=document.createElement("a");
+ open.className="image-action";
+ open.href=url;
+ open.target="_blank";
+ open.rel="noopener noreferrer";
+ open.textContent="↗ Open image";
+
+ const save=document.createElement("a");
+ save.className="image-action";
+ save.href=url;
+ save.target="_blank";
+ save.rel="noopener noreferrer";
+ save.download="novaai-image";
+ save.textContent="↓ Save image";
+
+ actions.append(open,save);
+
+ b.append(r,d,im,actions);
+ w.append(av,b);
+
+ document.getElementById("messages").appendChild(w);
+
+ scrollToBottom();
+
+}
+
+/* UPLOADED PHOTO DISPLAY */
+
+function addUploadedPhoto(url,fileName,store=true){
+
+ document.getElementById("welcome").style.display="none";
+
+ const w=document.createElement("div");
+ w.className="message user";
+
+ const av=document.createElement("div");
+ av.className="message-avatar";
+ av.textContent="Y";
+
+ const b=document.createElement("div");
+ b.className="message-body";
+
+ const r=document.createElement("div");
+ r.className="message-role";
+ r.textContent="You · Attached photo";
+
+ const im=document.createElement("img");
+ im.className="message-image";
+ im.src=url;
+ im.alt=fileName||"Uploaded photo";
+
+ const a=document.createElement("a");
+ a.className="image-action";
+ a.href=url;
+ a.target="_blank";
+ a.rel="noopener noreferrer";
+ a.textContent="↗ Open photo";
+
+ b.append(r,im,a);
+ w.append(av,b);
+
+ document.getElementById("messages").appendChild(w);
+
+ scrollToBottom();
+
+}
+
+/* THINKING INDICATOR */
+
+function showThinking(id="thinkingMessage",label="Thinking..."){
+
+ document.getElementById("welcome").style.display="none";
+
+ const w=document.createElement("div");
+
+ w.className="message assistant";
+ w.id=id;
+
+ w.innerHTML=
+ '<div class="message-avatar">N</div>'+
+ '<div class="message-body">'+
+ '<div class="message-role">NovaAI</div>'+
+ '<div class="thinking">'+label+'</div>'+
+ '</div>';
+
+ document.getElementById("messages").appendChild(w);
+
+ scrollToBottom();
+
+}
+
+function removeThinking(id="thinkingMessage"){
+
+ document.getElementById(id)?.remove();
+
+}
+
+/* IMAGE GENERATION */
+
+function isImageGenerationPrompt(text){
+
+ return /^generate\s+an?\s+image\b/i.test(text.trim());
+
+}
+
+async function generateImage(promptText){
+
+ const {data,error}=await supabaseClient.functions.invoke(
+  "image-generate",
+  {body:{prompt:promptText}}
+ );
+
+ if(error){
+
+  let message=error.message||"Image generation request failed.";
+
+  try{
+
+   if(error.context&&typeof error.context.json==="function"){
+
+    const e=await error.context.json();
+
+    message=e.error||e.message||message;
+
+   }
+
+  }catch(_){}
+
+  throw new Error(message);
+
+ }
+
+ if(!data||data.success!==true||!data.imageUrl){
+
+  throw new Error(data?.error||"Image generator returned an invalid response.");
+
+ }
+
+ return data;
+
+}
+
+async function sendImageRequest(text){
+
+ isGenerating=true;
+
+ setControlsDisabled(true);
+
+ chatMessages.push({role:"user",content:text});
+
+ addMessage("user",text);
+
+ showThinking("imageThinking","Creating your image...");
+
+ try{
+
+  const result=await generateImage(text);
+
+  removeThinking("imageThinking");
+
+  chatMessages.push({
+   role:"assistant",
+   content:"Generated image for: "+text,
+   type:"image",
+   prompt:text,
+   imageUrl:result.imageUrl,
+   fileName:result.fileName||null,
+   model:result.model||null
+  });
+
+  addImageMessage(text,result.imageUrl);
+
+  saveCurrentChat();
+
+ }catch(e){
+
+  removeThinking("imageThinking");
+
+  addMessage("assistant","I couldn't generate that image.\n\n"+(e.message||"Please try again."));
+
+  console.error("image-generate error",e);
+
+ }finally{
+
+  isGenerating=false;
+
+  setControlsDisabled(false);
+
+  document.getElementById("prompt").focus();
+
+ }
+
+}
+
+/* AI CHAT */
+
+async function sendChatMessage(text){
+
+ isGenerating=true;
+
+ setControlsDisabled(true);
+
+ chatMessages.push({role:"user",content:text});
+
+ addMessage("user",text);
+
+ showThinking();
+
+ try{
+
+  const messages=chatMessages
+   .filter(m=>m.role==="user"||m.role==="assistant")
+   .map(m=>({role:m.role,content:m.content}));
+
+  const {data,error}=await supabaseClient.functions.invoke(
+   "ai-chat",
+   {
+    body:{
+     provider:currentProvider,
+     messages:[
+      {
+       role:"system",
+       content:"You are NovaAI, a helpful, intelligent AI assistant. Give clear, accurate and useful answers. Format code and explanations clearly."
+      },
+      ...messages
+     ]
+    }
+   }
+  );
+
+  if(error){
+
+   let msg=error.message||"Edge Function request failed.";
+
+   try{
+
+    if(error.context&&typeof error.context.json==="function"){
+
+     const e=await error.context.json();
+
+     msg=e.error||msg;
+
+    }
+
+   }catch(_){}
+
+   throw new Error(msg);
+
+  }
+
+  if(!data||data.success!==true||!data.answer){
+
+   throw new Error(data?.error||"The AI returned an invalid response.");
+
+  }
+
+  removeThinking();
+
+  chatMessages.push({role:"assistant",content:data.answer});
+
+  addMessage("assistant",data.answer,true);
+
+  saveCurrentChat();
+
+ }catch(e){
+
+  removeThinking();
+
+  addMessage("assistant","Sorry, I couldn't get a response.\n\nError: "+(e.message||"Something went wrong."));
+
+  console.error("ai-chat error",e);
+
+ }finally{
+
+  isGenerating=false;
+
+  setControlsDisabled(false);
+
+  document.getElementById("prompt").focus();
+
+ }
+
+}
+
+/* SEND CONTROLS */
+
+function setControlsDisabled(disabled){
+
+ document.getElementById("sendButton").disabled=disabled;
+
+ document.getElementById("prompt").disabled=disabled;
+
+ document.querySelectorAll(".tool-pill").forEach(b=>b.disabled=disabled);
+
+}
+
+async function sendMessage(){
+
+ const input=document.getElementById("prompt");
+
+ const text=input.value.trim();
+
+ if((!text&&!selectedPhoto)||isGenerating)return;
+
+ input.value="";
+ input.style.height="auto";
+
+ if(selectedPhoto){
+
+  await uploadSelectedPhoto();
+
+  if(!text)return;
+
+ }
+
+ if(isImageGenerationPrompt(text)){
+
+  await sendImageRequest(text);
+
+ }else if(text){
+
+  await sendChatMessage(text);
+
+ }
+
+}
+
+/* CAMERA AND PHOTO UPLOAD */
+
+function handlePhotoSelection(file){
+
+ if(!file)return;
+
+ if(!file.type.startsWith("image/")){
+
+  alert("Please select an image file.");
+
+  return;
+
+ }
+
+ if(file.size>15*1024*1024){
+
+  alert("Please choose an image smaller than 15 MB.");
+
+  return;
+
+ }
+
+ selectedPhoto=file;
+
+ document.getElementById("attachmentThumb").src=URL.createObjectURL(file);
+
+ document.getElementById("attachmentName").textContent=file.name;
+
+ document.getElementById("attachmentPreview").style.display="flex";
+
+}
+
+document.getElementById("cameraInput").addEventListener("change",e=>{
+
+ handlePhotoSelection(e.target.files[0]);
+
+ e.target.value="";
+
+});
+
+document.getElementById("fileInput").addEventListener("change",e=>{
+
+ handlePhotoSelection(e.target.files[0]);
+
+ e.target.value="";
+
+});
+
+function removeAttachment(){
+
+ selectedPhoto=null;
+
+ document.getElementById("attachmentPreview").style.display="none";
+
+ document.getElementById("attachmentThumb").removeAttribute("src");
+
+}
+
+/* SUPABASE PHOTO STORAGE */
+
+async function uploadSelectedPhoto(){
+
+ if(!selectedPhoto)return;
+
+ const file=selectedPhoto;
+
+ selectedPhoto=null;
+
+ document.getElementById("attachmentPreview").style.display="none";
+
+ const ext=(file.name.split(".").pop()||"jpg")
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g,"")||"jpg";
+
+ const path=`${currentUser.id}/uploads/${crypto.randomUUID()}.${ext}`;
+
+ showThinking("uploadThinking","Uploading your photo...");
+
+ try{
+
+  const {error}=await supabaseClient.storage
+   .from("generated-images")
+   .upload(path,file,{
+    contentType:file.type,
+    upsert:false,
+    cacheControl:"3600"
+   });
+
+  if(error)throw error;
+
+  const {data}=supabaseClient.storage
+   .from("generated-images")
+   .getPublicUrl(path);
+
+  if(!data?.publicUrl){
+
+   throw new Error("Could not get the uploaded photo URL.");
+
+  }
+
+  removeThinking("uploadThinking");
+
+  chatMessages.push({
+   role:"user",
+   content:"Uploaded photo: "+file.name,
+   type:"upload",
+   imageUrl:data.publicUrl,
+   fileName:file.name
+  });
+
+  addUploadedPhoto(data.publicUrl,file.name);
+
+  saveCurrentChat();
+
+ }catch(e){
+
+  removeThinking("uploadThinking");
+
+  selectedPhoto=file;
+
+  document.getElementById("attachmentName").textContent=file.name;
+
+  document.getElementById("attachmentPreview").style.display="flex";
+
+  alert("Photo upload failed: "+(e.message||"Check that the generated-images bucket exists and allows uploads."));
+
+ }
+
+}
+
+/* STICKERS */
+
+const emojis=[
+"😀","😃","😄","😁","😂","🥹","😊",
+"😍","🥰","😘","😎","🤔","🤩","🥳",
+"😭","😴","🙏","👏","👍","👎","❤️",
+"💚","🔥","✨","🎉","🚀","🌟","💯",
+"🙌","🤝","😇","🤗","💡","🎨","🐱",
+"🐶","🌈","☀️","🌙","🍀","⚡","🎯"
+];
+
+document.getElementById("emojiGrid").innerHTML=emojis.map(e=>
+ `<button type="button" onclick="insertSticker('${e}')">${e}</button>`
+).join("");
+
+function toggleStickers(){
+
+ document.getElementById("emojiPanel").classList.toggle("open");
+
+}
+
+function insertSticker(emoji){
+
+ const input=document.getElementById("prompt");
+
+ input.value+=emoji;
+
+ input.focus();
+
+ document.getElementById("emojiPanel").classList.remove("open");
+
+}
+
+document.addEventListener("click",e=>{
+
+ const panel=document.getElementById("emojiPanel");
+
+ if(!panel.contains(e.target)&&!e.target.closest("#stickerButton")){
+
+  panel.classList.remove("open");
+
+ }
+
+});
+
+/* ENTER TO SEND */
+
 const promptInput=document.getElementById("prompt");
-promptInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
-promptInput.addEventListener("input",function(){this.style.height="auto";this.style.height=Math.min(this.scrollHeight,150)+"px";});
+
+promptInput.addEventListener("keydown",e=>{
+
+ if(e.key==="Enter"&&!e.shiftKey){
+
+  e.preventDefault();
+
+  sendMessage();
+
+ }
+
+});
+
+promptInput.addEventListener("input",function(){
+
+ this.style.height="auto";
+
+ this.style.height=Math.min(this.scrollHeight,150)+"px";
+
+});
+
+/* START */
+
 initializeApp();
+
 </script>
 </body>
 </html>
